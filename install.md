@@ -360,7 +360,25 @@ This exposes `cortex_render_template`, `cortex_claude_md_has_block`,
 
 Execute the steps below in order. After each block, report `[ok] <what>`.
 
-1. **Skeleton.** For each path in
+1. **Skeleton.** Announce first, then apply, then confirm.
+
+   Announce:
+
+   ```
+   About to create the folder skeleton inside <vault_path>:
+     - inbox/             (with .archive/ subfolder for retro'd work)
+     - retros/
+     - insights/          (debugging/, architecture/, tooling/)
+     - projects/
+     - people/
+     - references/        (articles/, books/)
+
+   I'll also drop a small _index.md into each of the top-level folders so
+   I can scan it later without opening every file. If any of these already
+   exist in your vault, I'll skip them and leave your existing notes alone.
+   ```
+
+   Then for each path in
    `"$CORTEX_REPO/presets/karpathy-lite/preset.yaml"`'s `skeleton_folders:`,
    `mkdir -p <vault_path>/<folder>`. Then for each file in
    `"$CORTEX_REPO/presets/karpathy-lite/skeleton/"`, copy to `<vault_path>/`
@@ -373,7 +391,26 @@ Execute the steps below in order. After each block, report `[ok] <what>`.
    `cp -n` skips any destination that already exists. If something is
    skipped, log it so the user knows to inspect manually.
 
-2. **Vault config.**
+   After:
+
+   ```
+   [ok] Skeleton in place. Skipped (already existed): <list, or "none">.
+   ```
+
+2. **Vault config.** Announce first, then apply, then confirm.
+
+   Announce:
+
+   ```
+   About to save your install settings to:
+     <vault_path>/.claude-cortex/config.yaml
+
+   This file records the choices you just made (preset, save behavior, stale
+   threshold, etc.) so I can read them back later. Only Cortex looks at this
+   file -- it doesn't affect Obsidian.
+   ```
+
+   Then run:
 
    ```bash
    mkdir -p <vault_path>/.claude-cortex
@@ -392,7 +429,26 @@ Execute the steps below in order. After each block, report `[ok] <what>`.
    installed_at: <ISO-8601 UTC now>
    ```
 
-3. **Skill.** Copy non-destructively so a pre-existing user skill of the same
+   After:
+
+   ```
+   [ok] Config written to <vault_path>/.claude-cortex/config.yaml.
+   ```
+
+3. **Skill.** Announce first, then apply, then confirm.
+
+   Announce:
+
+   ```
+   About to install the Cortex skill at:
+     ~/.claude/skills/claude-cortex/claude-cortex.md
+
+   This is the procedural manual I read whenever you run a Cortex slash
+   command or I'm about to write into the vault. If a skill already exists
+   at that path, I'll skip it and tell you so you can inspect manually.
+   ```
+
+   Then copy non-destructively so a pre-existing user skill of the same
    name is not clobbered:
 
    ```bash
@@ -406,10 +462,33 @@ Execute the steps below in order. After each block, report `[ok] <what>`.
    fi
    ```
 
-4. **Slash commands.** Six files: `save-insight.md`, `save-to-inbox.md`,
-   `retro.md`, `resume-work.md`, `triage-inbox.md`, `refresh-index.md`. Copy
-   each non-destructively so pre-existing user slash commands of the same
-   name are never overwritten:
+   After:
+
+   ```
+   [ok] Skill installed.
+   ```
+
+   (Or, if the destination already existed: `[ok] Skill already present -- skipped.`)
+
+4. **Slash commands.** Announce first, then apply, then confirm.
+
+   Announce:
+
+   ```
+   About to install 6 slash commands at ~/.claude/commands/:
+     - save-to-inbox.md   -- stage a quick note for the active work item
+     - save-insight.md    -- save a durable lesson
+     - retro.md           -- wrap up a work item and file its notes
+     - resume-work.md     -- catch you up on a work item you stepped away from
+     - triage-inbox.md    -- handle work items that have gone stale
+     - refresh-index.md   -- rebuild a folder's _index.md listing
+
+   If you already have a command of the same name, I'll skip that one and
+   tell you, so your existing setup is never overwritten.
+   ```
+
+   Then copy each non-destructively so pre-existing user slash commands of
+   the same name are never overwritten:
 
    ```bash
    mkdir -p ~/.claude/commands
@@ -424,13 +503,40 @@ Execute the steps below in order. After each block, report `[ok] <what>`.
    done
    ```
 
-5. **Hook script.**
+   After:
+
+   ```
+   [ok] Slash commands installed. Skipped: <list, or "none">.
+   ```
+
+5. **Hook script.** Announce first, then apply, then confirm.
+
+   Announce:
+
+   ```
+   About to install the session-start hook at:
+     ~/.claude/hooks/claude-cortex-session-start.sh
+
+   This runs once when you start a Claude Code session. It records the
+   session ID so I can later say "this note came from that session" --
+   helpful when you come back to a work item days later. The next step
+   (settings.json) is where I actually register the hook to run; this step
+   just lays down the script.
+   ```
+
+   Then run:
 
    ```bash
    mkdir -p ~/.claude/hooks
    cp "$CORTEX_REPO/presets/karpathy-lite/hooks/session-start.sh" \
      ~/.claude/hooks/claude-cortex-session-start.sh
    chmod +x ~/.claude/hooks/claude-cortex-session-start.sh
+   ```
+
+   After:
+
+   ```
+   [ok] Hook script installed.
    ```
 
 6. **`~/.claude/settings.json` hook entry.**
