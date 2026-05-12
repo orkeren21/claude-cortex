@@ -6,11 +6,11 @@ install while preserving the user's vault data.
 ## Posture
 
 Show every action before taking it. Uninstalls feel safer when the user sees
-exactly what's about to disappear. The §3 confirmation gate authorizes the
+exactly what's about to disappear. The section 3 confirmation gate authorizes the
 removals listed under "Will remove"; each removal still shows its diff or
 target before applying.
 
-## §0 — Preflight
+## 0. Preflight
 
 1. **OS check.**
 
@@ -48,7 +48,7 @@ target before applying.
    The helpers contain `cortex_claude_md_has_block` and
    `cortex_claude_md_remove_block` which we use below.
 
-## §1 — Locate the install
+## 1. Locate the install
 
 1. Look for the cortex block in `~/.claude/CLAUDE.md`:
 
@@ -95,7 +95,7 @@ target before applying.
    fi
    ```
 
-## §2 — Confirm
+## 2. Confirm
 
 Show the user the plan:
 
@@ -109,7 +109,7 @@ Will remove:
   - SessionStart hook entry from ~/.claude/settings.json (only the entry whose command points at our hook)
   - <vault_path>/.claude-cortex/
 
-Will NOT touch (asked separately in §4):
+Will NOT touch (asked separately in section 4):
   - <vault_path>/inbox/
   - <vault_path>/inbox/.archive/
   - <vault_path>/retros/
@@ -124,7 +124,7 @@ Proceed with the removals above? [y/N]
 
 Wait for `y`. On anything else, bail with `Uninstall cancelled.`.
 
-## §3 — Apply
+## 3. Apply
 
 Execute in this order. After each step, report `[ok] <what>`.
 
@@ -224,7 +224,7 @@ Execute in this order. After each step, report `[ok] <what>`.
    rm -rf "$VAULT_PATH/.claude-cortex/"
    ```
 
-## §4 — Vault content (asked separately)
+## 4. Vault content (asked separately)
 
 Ask:
 
@@ -274,7 +274,7 @@ Choose (a/b/c):
   `rm -rf "$VAULT_PATH/"`. On any mismatch: bail with
   `Path didn't match -- vault preserved.`.
 
-## §5 — Done
+## 5. Done
 
 ```
 [ok] Claude Cortex uninstalled.
