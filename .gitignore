@@ -1,0 +1,12 @@
+.DS_Store
+.idea/
+.vscode/
+*.log
+node_modules/
+.env
+.env.*
+
+# Test artifacts
+tests/.tmp/
+tests/.bats-output/
+tests/smoke/.sandbox/

@@ -1,0 +1,120 @@
+# Claude Cortex — Second Brain
+
+## Vault location
+- Path: `{{VAULT_PATH}}`
+- Preset: `karpathy-lite`
+- Auto-capture mode: `{{AUTO_CAPTURE_MODE}}`
+- Stale-staging threshold: {{STALE_STAGING_DAYS}} days
+- Index auto-maintenance: {{INDEX_AUTO_MAINTENANCE}}
+- Cortex version: {{CORTEX_VERSION}}
+
+## Read/write contract
+
+**You may READ from the vault freely** — search, grep, open files any time
+the vault has relevant context for the user's question. Before reading any
+file inside a vault folder, read that folder's `_index.md` if present and
+use it to choose which files to open.
+
+**You may WRITE to the vault only via these paths:**
+1. **Auto-stage to `inbox/<W-ID>/`** — when you detect a query that worked,
+   a decision being made, or a gotcha worth remembering. Always announce
+   the stage in one line: `Staged → inbox/<W-ID>/<slug>.md`.
+2. **Offer-and-approve for durable destinations** — when you detect content
+   that belongs in `insights/`, `projects/<name>/decisions/`, `architecture/`,
+   or `references/`. Surface a short proposal; user says yes/edit/no.
+3. **Slash commands** — `/save-to-inbox`, `/save-insight`, `/retro`,
+   `/resume-work`, `/triage-inbox`, `/refresh-index`. The user explicitly invoked.
+4. **Natural-language equivalents** — phrases like "save this to the vault",
+   "stage this", "let's retro W-XXXXXX". Map to the corresponding command.
+
+**You may NEVER:**
+- Modify existing notes outside `inbox/` without an explicit user request.
+- Write literal credentials/secrets to the vault. Use references
+  (e.g. `op://Vault/Item/field`, keychain item names) — never values.
+  This rule applies to "mocked" or "test" credentials too.
+- Delete files from the vault. The retro flow archives; only the user purges.
+
+## Auto-capture heuristics (mode = `{{AUTO_CAPTURE_MODE}}`)
+
+Detect these patterns and act per the mode. In every mode, auto-stages are
+announced in one line; durable writes always go through offer-and-approve.
+
+| Pattern | Trigger phrases | Type |
+|---|---|---|
+| Query confirmed working | "that worked", "yep returns the rows", "this query gives me…" | query |
+| Decision made | "we decided", "going with X", "let's use X over Y" | decision |
+| Generalizable gotcha | "turns out", "gotcha is", "next time remember" | insight |
+| Architecture explained | extended explanation of repo/system structure | architecture |
+| Person context | "Jane is the owner of…", "ask John about…" | person |
+| W-XXXXXX mentioned | any `W-\d{6,}` pattern | (sets active work item) |
+
+Mode behaviors:
+- `aggressive`: auto-stage every detected pattern; batched offer at session end.
+- `balanced` (default): auto-stage queries and scratch; offer for decisions/insights;
+  batched offer at session end.
+- `minimal`: no auto-stage; offers only at session end / completion signals.
+- `off`: slash commands + natural language only.
+
+## Triggers
+
+| Trigger | When | What you do |
+|---|---|---|
+| Slash command | user types `/retro`, `/save-insight`, etc. | Run the command. |
+| Natural language | "save this to the vault", "stage this", "let's retro W-XXXXXX" | Map to corresponding command. |
+| Auto-stage | Heuristic match per mode | Stage and announce in one line. |
+| Session-end offer | Long session (>30 min activity) AND captures made/queued | Ask once: "Save these N items?" |
+| Completion signal | PR merged via `gh`, "shipped it", work-item closed | Ask: "Run /retro for W-<ID>?" |
+| Stale-staging | At session start: any `inbox/W-*/` `last_touched` > {{STALE_STAGING_DAYS}} days | One-line surface; offer `/triage-inbox`. |
+
+## Routing table (Karpathy-lite)
+
+| `type:` | Destination |
+|---|---|
+| `scratch` | `inbox/<W-ID>/<slug>.md` |
+| `retro` | `retros/<project>/YYYY-MM-DD-<W-ID>-<slug>.md` |
+| `insight` | `insights/<topic>/<slug>.md` |
+| `architecture` | `projects/<project>/architecture/<slug>.md` |
+| `decision` | `projects/<project>/decisions/YYYY-MM-DD-<slug>.md` |
+| `query` | `projects/<project>/queries/<query_kind>/<slug>.md` |
+| `person` | `people/<firstname>-<lastname>-<role-slug>.md` |
+| `reference` | `references/<kind>/<slug>.md` |
+
+## Frontmatter requirement
+
+Every Claude-written note carries YAML frontmatter:
+
+```yaml
+---
+type: <required, drives routing>
+title: "<required>"
+created: <ISO-8601 UTC>
+updated: <ISO-8601 UTC>
+tags: [<list>]
+source_session: <session-id>
+---
+```
+
+The full per-type schema lives in `~/.claude/skills/claude-cortex/claude-cortex.md`.
+
+## Index files (`_index.md`)
+
+Before reading any vault folder's contents, read its `_index.md` first if present.
+When you write a new file via any capture flow, also update the parent folder's
+`_index.md`: add an entry under "Contents" with a one-line description, and
+bump `last_updated:`.
+
+## Session tracking
+
+When writing into `inbox/<W-ID>/`, also update `inbox/<W-ID>/sessions.yaml`:
+- Create with current session id, started, cwd, summary if first time.
+- Update `last_touched`, append/refresh this session's entry, add new file
+  to `files_touched` on subsequent writes.
+
+The session id comes from the marker file at
+`~/.claude/session-env/<id>/session-id.txt` (written by the SessionStart hook).
+The discovery procedure is documented in
+`~/.claude/skills/claude-cortex/claude-cortex.md` § Session ID.
+
+## When in doubt
+Ask the user. Especially: ambiguous routing, ambiguous work item, unclear
+whether something belongs in inbox vs. a durable folder.
