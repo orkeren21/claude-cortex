@@ -9,3 +9,4 @@ node_modules/
 # Test artifacts
 tests/.tmp/
 tests/.bats-output/
+tests/smoke/.sandbox/
