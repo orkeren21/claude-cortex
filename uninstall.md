@@ -126,7 +126,7 @@ Wait for `y`. On anything else, bail with `Uninstall cancelled.`.
 
 ## §3 — Apply
 
-Execute in this order. After each step, report `✓ <what>`.
+Execute in this order. After each step, report `[ok] <what>`.
 
 1. **Remove the cortex block from `~/.claude/CLAUDE.md`** using the helpers
    (which handle the EOF edge case correctly):
@@ -246,18 +246,38 @@ Choose (a/b/c):
   # On y:
   rm -rf "$VAULT_PATH/inbox/.archive/"
   ```
-- On `c`: require an EXPLICIT second confirmation that the user types the
-  full absolute path back:
+- On `c`: this is the only path that touches your notes. Show a clear
+  summary, warn explicitly, and require an exact-match type-back before
+  doing anything.
+
+  ```bash
+  echo "Heads up: this will permanently delete your entire vault, including"
+  echo "every note you've written. There is no undo."
+  echo
+  echo "About to remove:"
+  echo "  $VAULT_PATH"
+  echo "  Files: $(find "$VAULT_PATH" -type f 2>/dev/null | wc -l | tr -d ' ')"
+  echo "  Size:  $(du -sh "$VAULT_PATH" 2>/dev/null | awk '{print $1}')"
   ```
-  This will permanently remove all your notes at <vault_path>.
-  Type the absolute path to confirm:
+
+  Then ask:
+
   ```
-  Only on exact match: `rm -rf "$VAULT_PATH/"`. Otherwise bail.
+  If you're sure, type the absolute path back exactly as shown above to
+  confirm. Anything else cancels.
+
+  Path:
+  ```
+
+  Compare strings exactly (`[ "$typed" = "$VAULT_PATH" ]`, case-sensitive,
+  no trailing-slash normalization). Only on exact match:
+  `rm -rf "$VAULT_PATH/"`. On any mismatch: bail with
+  `Path didn't match -- vault preserved.`.
 
 ## §5 — Done
 
 ```
-✓ Claude Cortex uninstalled.
+[ok] Claude Cortex uninstalled.
 
 The system has been removed from ~/.claude/. Restart Claude Code (or open a
 new session) for changes to take effect.
