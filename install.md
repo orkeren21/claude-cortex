@@ -396,8 +396,6 @@ Execute the steps below in order. After each block, report `✓ <what>`.
    Rules:    ~/.claude/CLAUDE.md (between cortex delimiters)
 
    Restart Claude Code or open a new session for the SessionStart hook to fire.
-
-   See docs/troubleshooting.md if something looks off.
    ```
 
 ## §8 — Errors
