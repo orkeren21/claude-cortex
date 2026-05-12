@@ -8,8 +8,13 @@ Inspired by [Andrej Karpathy's locally-curated Obsidian-vault practice](https://
 
 - A vault folder structure tuned for engineers managing many parallel projects.
 - Six slash commands: `/save-to-inbox`, `/save-insight`, `/retro`, `/resume-work`, `/triage-inbox`, `/refresh-index`.
-- Auto-capture: Claude detects working queries, decisions, and gotchas and stages them with a one-line announcement.
-- Stale-staging detection: forgotten work items get surfaced after a sprint.
+- Quick capture: when Claude notices something worth keeping (a query that
+  worked, a decision, a gotcha), it drops a quick note in the inbox and
+  tells you in one line. You can always say "don't bother" and turn it down
+  or off.
+- Forgotten-work nudge: if you stop touching a work item for a while,
+  Claude reminds you at the start of your next session so you can wrap it
+  up or move on.
 - Session tracking: every staging folder remembers which Claude Code sessions contributed to it, so post-vacation resume is instant.
 - Cleanly delimited additions to `~/.claude/CLAUDE.md` — uninstall removes them without touching anything else.
 
