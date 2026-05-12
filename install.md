@@ -23,6 +23,17 @@ The single Plan-and-confirm gate in §5 authorizes the overall install, but
 each individual write step in §6 still presents its diff before applying so
 the user sees exactly what is changing on disk at each step.
 
+**Ask exactly one question per turn.** Do not batch questions across sections.
+Do not present multiple prompts and ask the user to "reply with your picks".
+Wait for the user's answer before asking the next question. This applies to
+every prompt in sections §1, §3, and §4. The user-facing experience must be a
+real conversation, one question at a time, in order.
+
+**Use plain ASCII for terminal output.** Prefer `-` (hyphen) and `--`
+(double hyphen) to em-dashes (`—`) and en-dashes (`–`) in any text you read
+out to the user. Do not use box-drawing characters or smart quotes. Plain
+ASCII renders consistently across every terminal.
+
 ## §0 — Preflight
 
 Run these checks. If any fail, bail with a clear message.
@@ -55,7 +66,7 @@ Run these checks. If any fail, bail with a clear message.
    ```
 
    - If yes: continue.
-   - If no: print `~/.claude not found — install Claude Code first.` and bail.
+   - If no: print `~/.claude not found -- install Claude Code first.` and bail.
 
 4. **`jq` check.** macOS does not ship `jq`, and §6 needs it for safe
    `settings.json` edits.
@@ -86,6 +97,9 @@ Run these checks. If any fail, bail with a clear message.
 
 ## §1 — Vault discovery
 
+This is the first user prompt. Ask it on its own; wait for the answer; then
+move on to §2.
+
 1. Search common vault paths:
 
    ```bash
@@ -96,7 +110,8 @@ Run these checks. If any fail, bail with a clear message.
 
    Each `.obsidian` directory's parent is a vault candidate.
 
-2. **If candidates found:** present them numbered, default to the first:
+2. **If candidates found:** present them numbered, default to the first.
+   Send this as a single message and stop:
 
    ```
    Found Obsidian vaults:
@@ -105,8 +120,9 @@ Run these checks. If any fail, bail with a clear message.
    Use which? (1-2 or absolute path)
    ```
 
-3. **If none found:** ask: "No vault found. Provide an absolute path, or I
-   can create one at `~/Documents/Obsidian/Cortex`. Which?"
+3. **If none found:** ask the following as a single message and stop:
+   "No vault found. Provide an absolute path, or I can create one at
+   `~/Documents/Obsidian/Cortex`. Which?"
 
    On `create`: `mkdir -p` the path and create a minimal `.obsidian/` dir
    with `app.json`, `appearance.json`, `core-plugins.json` whose content is
@@ -114,6 +130,9 @@ Run these checks. If any fail, bail with a clear message.
    on first open.
 
 4. Store the chosen path in a variable conceptually called `<vault_path>`.
+
+**After the user answers §1, proceed to §2. Do not ask any other questions
+until you have a vault path.**
 
 ## §2 — Preset selection
 
@@ -128,25 +147,56 @@ No question to ask.
 
 ## §3 — Auto-capture mode
 
-Ask:
+Ask the following as a single message and stop. Do not include §4 questions in
+the same message. Wait for the user's answer before continuing:
 
 ```
 Auto-capture mode? Controls how aggressive Claude is about auto-staging.
-  (a) aggressive — auto-stage every detected pattern.
-  (b) balanced  — auto-stage queries/scratch; offer for decisions/insights. (default)
-  (c) minimal   — no auto-stage; offers only at session end.
-  (d) off       — slash commands and natural language only.
+  (a) aggressive -- auto-stage every detected pattern.
+  (b) balanced   -- auto-stage queries/scratch; offer for decisions/insights. (default)
+  (c) minimal    -- no auto-stage; offers only at session end.
+  (d) off        -- slash commands and natural language only.
+
+Pick one (a/b/c/d).
 ```
 
-Store the answer as `<auto_capture_mode>`.
+Accept `a`, `b`, `c`, `d` or the full word (`aggressive`, `balanced`, `minimal`,
+`off`). On any other input, restate the options and ask again.
+
+Store the answer as `<auto_capture_mode>`. Then proceed to §4.
 
 ## §4 — Optional features
 
-Ask each, one at a time:
+Three separate prompts. Ask each one as its own message, wait for the answer,
+then ask the next. Do NOT batch them. Do NOT ask the user to "answer all of
+the below".
 
-1. `Enable a daily/ folder for daily notes? [y/N]` → `<daily_notes>`
-2. `Stale-staging warning threshold in days? [default: 14]` → `<stale_days>`
-3. `Enable _index.md auto-maintenance? [Y/n]` → `<index_auto_maintenance>`
+**§4.1.** Send this as a single message and stop:
+
+```
+Enable a daily/ folder for daily notes? [y/N]
+```
+
+Default on empty input is `N`. Store as `<daily_notes>`.
+
+**§4.2.** Only after §4.1 is answered, send this as a single message and stop:
+
+```
+Stale-staging warning threshold in days? [default: 14]
+```
+
+Default on empty input is `14`. Accept any positive integer. Store as
+`<stale_days>`.
+
+**§4.3.** Only after §4.2 is answered, send this as a single message and stop:
+
+```
+Enable _index.md auto-maintenance? [Y/n]
+```
+
+Default on empty input is `Y`. Store as `<index_auto_maintenance>`.
+
+After §4.3 is answered, proceed to §5.
 
 ## §5 — Plan & confirm
 
@@ -194,7 +244,7 @@ This exposes `cortex_render_template`, `cortex_claude_md_has_block`,
 `cortex_claude_md_append_block`, `cortex_yaml_get`, `cortex_yaml_set`, and
 `cortex_log`.
 
-Execute the steps below in order. After each block, report `✓ <what>`.
+Execute the steps below in order. After each block, report `[ok] <what>`.
 
 1. **Skeleton.** For each path in
    `"$CORTEX_REPO/presets/karpathy-lite/preset.yaml"`'s `skeleton_folders:`,
@@ -384,10 +434,10 @@ Execute the steps below in order. After each block, report `✓ <what>`.
 3. **Report success:**
 
    ```
-   ✓ Claude Cortex v0.1.0 installed.
+   [ok] Claude Cortex v0.1.0 installed.
 
    Try:
-     - Mention W-XXXXXX in a session — Cortex sets it as the active work item.
+     - Mention W-XXXXXX in a session -- Cortex sets it as the active work item.
      - Run /save-to-inbox in a Claude Code session to stage a note.
      - Run /retro <W-ID> to synthesize and dispatch staged notes.
 
