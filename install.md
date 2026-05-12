@@ -95,12 +95,12 @@ Run these checks. If any fail, bail with a clear message.
    From here on, paths like `presets/karpathy-lite/...` should be read as
    `"$CORTEX_REPO/presets/karpathy-lite/..."`.
 
-## §1 — Vault discovery
+## §1 — Pick where Claude Cortex will live
 
 This is the first user prompt. Ask it on its own; wait for the answer; then
 move on to §2.
 
-1. Search common vault paths:
+1. Search common Obsidian vault paths:
 
    ```bash
    ls -d ~/Documents/Obsidian/*/.obsidian 2>/dev/null \
@@ -110,52 +110,129 @@ move on to §2.
 
    Each `.obsidian` directory's parent is a vault candidate.
 
-2. **If candidates found:** present them numbered, default to the first.
-   Send this as a single message and stop:
+2. **If candidates found:** present them with the framing below. Send this as
+   a single message and stop. Renumber the options so the existing vaults are
+   1..N and "create a new one" is N+1. Show the absolute paths exactly as
+   `find` returned them (do not abbreviate, do not redact):
 
    ```
-   Found Obsidian vaults:
-     1. /Users/.../Documents/Obsidian/WorkOS  (default)
-     2. /Users/.../Documents/Obsidian/Personal
-   Use which? (1-2 or absolute path)
+   Where would you like Claude Cortex to live? This is the folder Cortex will
+   read from and (in limited cases) write to during your work -- think of it
+   as a notebook the assistant shares with you.
+
+   I found these existing Obsidian vault(s) on this machine:
+     1. /Users/<full-path>/Documents/Obsidian/WorkOS         (recommended)
+     2. /Users/<full-path>/Documents/Obsidian/Personal
+     3. Create a new vault at ~/Documents/Obsidian/Cortex
+     4. Use a different folder (you'll provide the absolute path)
+
+   Pick a number, or paste an absolute path to use that folder directly.
    ```
 
-3. **If none found:** ask the following as a single message and stop:
-   "No vault found. Provide an absolute path, or I can create one at
-   `~/Documents/Obsidian/Cortex`. Which?"
+   - On a number: use the corresponding path. For "Create a new vault",
+     `mkdir -p` the path and create a minimal `.obsidian/` dir with
+     `app.json`, `appearance.json`, `core-plugins.json` whose content is the
+     literal `{}` (an empty JSON object) so Obsidian recognizes the vault on
+     first open. For "Use a different folder", ask: `Absolute path?` and wait
+     for a single string.
+   - On an absolute path that doesn't exist yet: confirm `Create <path>? [Y/n]`
+     before `mkdir -p` and `.obsidian/` setup as above.
+   - On an absolute path that exists but has no `.obsidian/`: warn
+     `<path> doesn't look like an Obsidian vault. Initialize it as one? [Y/n]`
+     before creating `.obsidian/`.
 
-   On `create`: `mkdir -p` the path and create a minimal `.obsidian/` dir
-   with `app.json`, `appearance.json`, `core-plugins.json` whose content is
-   the literal `{}` (an empty JSON object) so Obsidian recognizes the vault
-   on first open.
+3. **If no candidates found:** send this as a single message and stop:
+
+   ```
+   Where would you like Claude Cortex to live? This is the folder Cortex will
+   read from and (in limited cases) write to during your work -- think of it
+   as a notebook the assistant shares with you.
+
+   I couldn't find an existing Obsidian vault on this machine. Pick one:
+     1. Create a new vault at ~/Documents/Obsidian/Cortex
+     2. Use a different folder (you'll provide the absolute path)
+
+   Pick a number, or paste an absolute path to use that folder directly.
+   ```
 
 4. Store the chosen path in a variable conceptually called `<vault_path>`.
 
 **After the user answers §1, proceed to §2. Do not ask any other questions
 until you have a vault path.**
 
-## §2 — Preset selection
+## §2 — Pick a folder structure
 
-Currently only `karpathy-lite` ships in v0.1.0. Tell the user:
+This is the SECOND user prompt. Ask it on its own; wait for the answer; then
+move on to §3.
 
-```
-Preset: karpathy-lite (the only preset shipped in v0.1.0).
-PARA preset is a planned future option.
-```
+The "preset" determines how Cortex organizes folders inside the vault: where
+retros live, where notes get filed, what counts as a "project" vs. a topical
+"insight", etc.
 
-No question to ask.
+1. Send this as a single message and stop. Use ASCII only (`--`, `[ok]`):
 
-## §3 — Auto-capture mode
+   ```
+   How should Cortex organize the folders inside your vault?
+
+   1. Karpathy-lite (recommended)
+      Folders by kind of artifact -- one folder per "thing":
+        retros/      -- write-ups produced by /retro at the end of a work item
+        insights/    -- durable lessons that apply beyond one project
+        projects/    -- per-project notes (one subfolder per project)
+        people/      -- collaborator notes, 1:1s
+        references/  -- distilled external reading
+        inbox/       -- staging area for mid-flight notes (gets consolidated by /retro)
+      Auto-routing is mechanical and reliable. Good default for most engineers.
+
+   2. PARA  (NOT YET AVAILABLE in v0.1.0 -- planned for a future release)
+      Folders by life-area: 1-projects/, 2-areas/, 3-resources/, 4-archive/.
+      Heavier on manual curation; you decide what is a Project vs. an Area
+      vs. a Resource. Not shipped yet.
+
+   3. Custom folder structure (NOT YET AVAILABLE in v0.1.0 -- planned for a future release)
+      Bring your own taxonomy. Not shipped yet.
+
+   Pick 1 to continue.
+   ```
+
+2. Accept input:
+   - `1` or `karpathy-lite` -> proceed.
+   - `2` / `para` / `3` / `custom` -> reply:
+     `That preset isn't shipped in v0.1.0 yet. The only available choice today is "1" (Karpathy-lite). Pick "1" to continue, or cancel the install.`
+     Then ask again.
+   - Anything else -> restate and ask again.
+
+3. Once the user picks `1`, store `<preset>` as `karpathy-lite`. Confirm in
+   one line and proceed to §3:
+
+   ```
+   [ok] Folder structure: Karpathy-lite.
+   ```
+
+**After the user answers §2, proceed to §3.**
+
+## §3 — How proactive should Cortex be?
 
 Ask the following as a single message and stop. Do not include §4 questions in
-the same message. Wait for the user's answer before continuing:
+the same message. Wait for the user's answer before continuing.
+
+The "auto-capture mode" controls how aggressively Cortex saves notes for you
+during work. "Auto-stage" means dropping a quick note into the inbox folder
+without asking first (Cortex tells you when it does); "offer" means Cortex
+asks you first before saving.
 
 ```
-Auto-capture mode? Controls how aggressive Claude is about auto-staging.
-  (a) aggressive -- auto-stage every detected pattern.
-  (b) balanced   -- auto-stage queries/scratch; offer for decisions/insights. (default)
-  (c) minimal    -- no auto-stage; offers only at session end.
-  (d) off        -- slash commands and natural language only.
+How proactive should Cortex be about saving notes during your work?
+
+  (a) Aggressive -- save every pattern Cortex detects (queries, decisions,
+      gotchas) into the inbox folder. Most notes captured. Heaviest hand.
+  (b) Balanced   -- (recommended) save queries and quick scratch notes
+      automatically, but ask first before saving anything more durable
+      (decisions, lessons learned).
+  (c) Minimal    -- save nothing automatically. Cortex only offers to save
+      a batch at the end of a long session.
+  (d) Off        -- save nothing automatically and do not offer. Notes are
+      saved only when you explicitly use a slash command or ask Cortex to.
 
 Pick one (a/b/c/d).
 ```
@@ -165,33 +242,61 @@ Accept `a`, `b`, `c`, `d` or the full word (`aggressive`, `balanced`, `minimal`,
 
 Store the answer as `<auto_capture_mode>`. Then proceed to §4.
 
-## §4 — Optional features
+## §4 — A few small choices
 
 Three separate prompts. Ask each one as its own message, wait for the answer,
 then ask the next. Do NOT batch them. Do NOT ask the user to "answer all of
-the below".
+the below". Each prompt should explain itself; don't assume the user knows
+the jargon.
 
-**§4.1.** Send this as a single message and stop:
+**§4.1 -- Daily notes folder.** Send this as a single message and stop:
 
 ```
-Enable a daily/ folder for daily notes? [y/N]
+Want a daily/ folder created in the vault for one-note-per-day journaling?
+
+  - Some people keep a daily journal note in Obsidian and use it as a
+    catch-all for the day. If that sounds useful, say yes -- Cortex will
+    create the folder for you.
+  - Most users skip this; the inbox folder already covers mid-flight notes.
+
+[y/N] (default: no)
 ```
 
 Default on empty input is `N`. Store as `<daily_notes>`.
 
-**§4.2.** Only after §4.1 is answered, send this as a single message and stop:
+**§4.2 -- "Stale" reminder threshold.** Only after §4.1 is answered, send this
+as a single message and stop:
 
 ```
-Stale-staging warning threshold in days? [default: 14]
+After how many days should Cortex remind you about a forgotten work item?
+
+When you start working on something tracked by a work-item ID (e.g. W-123456),
+Cortex stages quick notes into inbox/W-123456/. If you stop touching that
+folder for a while, Cortex flags it at session start with a one-line nudge
+to either run /retro on it or clean it up.
+
+The default is 14 days (one sprint). Pick a number of days, or press enter
+for the default.
+
+[default: 14]
 ```
 
 Default on empty input is `14`. Accept any positive integer. Store as
 `<stale_days>`.
 
-**§4.3.** Only after §4.2 is answered, send this as a single message and stop:
+**§4.3 -- Auto-update the folder index files.** Only after §4.2 is answered,
+send this as a single message and stop:
 
 ```
-Enable _index.md auto-maintenance? [Y/n]
+Should Cortex keep folder index files (_index.md) up to date automatically?
+
+Each folder in your vault gets a small _index.md file that lists what's
+inside it. Cortex reads these first before opening individual notes -- it's
+how the assistant navigates your vault efficiently. If yes, Cortex will
+update these index files for you whenever it adds a note. If no, you'd
+update them manually (or run /refresh-index <folder> later).
+
+[Y/n] (default: yes -- recommended)
 ```
 
 Default on empty input is `Y`. Store as `<index_auto_maintenance>`.
@@ -200,26 +305,35 @@ After §4.3 is answered, proceed to §5.
 
 ## §5 — Plan & confirm
 
-Show the user a complete plan:
+Show the user a complete plan. Use plain ASCII; explain each line briefly so
+the user understands what they are confirming:
 
 ```
-Plan:
+Here's the plan:
 
-  Vault path:       <vault_path>
-  Preset:           karpathy-lite
-  Auto-capture:     <auto_capture_mode>
-  Stale threshold:  <stale_days> days
-  Index auto-maint: <index_auto_maintenance>
-  Daily notes:      <daily_notes>
+  Vault folder:        <vault_path>
+  Folder structure:    Karpathy-lite
+  Save behavior:       <auto_capture_mode>  (e.g. balanced, minimal, off)
+  Stale reminder:      <stale_days> days
+  Auto-update indexes: <index_auto_maintenance>
+  Daily notes folder:  <daily_notes>
 
-Will:
-  - Create vault skeleton at <vault_path>/ (skipping any folder that exists).
-  - Write <vault_path>/.claude-cortex/config.yaml.
-  - Copy skills to ~/.claude/skills/claude-cortex/claude-cortex.md.
-  - Copy 6 slash commands to ~/.claude/commands/.
-  - Install SessionStart hook to ~/.claude/hooks/claude-cortex-session-start.sh.
-  - Add SessionStart hook entry to ~/.claude/settings.json.
-  - Append the cortex block to ~/.claude/CLAUDE.md (or create if missing).
+This will:
+  - Set up the folder skeleton inside <vault_path>/ (skipping any folder
+    that already exists, so existing notes are not touched).
+  - Save your settings at <vault_path>/.claude-cortex/config.yaml.
+  - Install the Cortex skill at ~/.claude/skills/claude-cortex/.
+  - Install 6 slash commands at ~/.claude/commands/ (save-to-inbox,
+    save-insight, retro, resume-work, triage-inbox, refresh-index).
+  - Install a session-start hook at ~/.claude/hooks/.
+  - Register the hook in ~/.claude/settings.json (only adding our entry --
+    your other hooks are untouched).
+  - Append the Cortex block to ~/.claude/CLAUDE.md (between dedicated
+    delimiters; the rest of your CLAUDE.md is untouched). If CLAUDE.md
+    doesn't exist yet, it will be created.
+
+Each individual write in the next step still shows you a diff before
+applying.
 
 Proceed? [y/N]
 ```
