@@ -6,11 +6,11 @@ install while preserving the user's vault data.
 ## Posture
 
 Show every action before taking it. Uninstalls feel safer when the user sees
-exactly what's about to disappear. The §3 confirmation gate authorizes the
+exactly what's about to disappear. The section 3 confirmation gate authorizes the
 removals listed under "Will remove"; each removal still shows its diff or
 target before applying.
 
-## §0 — Preflight
+## 0. Preflight
 
 1. **OS check.**
 
@@ -48,7 +48,7 @@ target before applying.
    The helpers contain `cortex_claude_md_has_block` and
    `cortex_claude_md_remove_block` which we use below.
 
-## §1 — Locate the install
+## 1. Locate the install
 
 1. Look for the cortex block in `~/.claude/CLAUDE.md`:
 
@@ -95,7 +95,7 @@ target before applying.
    fi
    ```
 
-## §2 — Confirm
+## 2. Confirm
 
 Show the user the plan:
 
@@ -109,7 +109,7 @@ Will remove:
   - SessionStart hook entry from ~/.claude/settings.json (only the entry whose command points at our hook)
   - <vault_path>/.claude-cortex/
 
-Will NOT touch (asked separately in §4):
+Will NOT touch (asked separately in section 4):
   - <vault_path>/inbox/
   - <vault_path>/inbox/.archive/
   - <vault_path>/retros/
@@ -124,9 +124,9 @@ Proceed with the removals above? [y/N]
 
 Wait for `y`. On anything else, bail with `Uninstall cancelled.`.
 
-## §3 — Apply
+## 3. Apply
 
-Execute in this order. After each step, report `✓ <what>`.
+Execute in this order. After each step, report `[ok] <what>`.
 
 1. **Remove the cortex block from `~/.claude/CLAUDE.md`** using the helpers
    (which handle the EOF edge case correctly):
@@ -224,7 +224,7 @@ Execute in this order. After each step, report `✓ <what>`.
    rm -rf "$VAULT_PATH/.claude-cortex/"
    ```
 
-## §4 — Vault content (asked separately)
+## 4. Vault content (asked separately)
 
 Ask:
 
@@ -246,18 +246,38 @@ Choose (a/b/c):
   # On y:
   rm -rf "$VAULT_PATH/inbox/.archive/"
   ```
-- On `c`: require an EXPLICIT second confirmation that the user types the
-  full absolute path back:
-  ```
-  This will permanently remove all your notes at <vault_path>.
-  Type the absolute path to confirm:
-  ```
-  Only on exact match: `rm -rf "$VAULT_PATH/"`. Otherwise bail.
+- On `c`: this is the only path that touches your notes. Show a clear
+  summary, warn explicitly, and require an exact-match type-back before
+  doing anything.
 
-## §5 — Done
+  ```bash
+  echo "Heads up: this will permanently delete your entire vault, including"
+  echo "every note you've written. There is no undo."
+  echo
+  echo "About to remove:"
+  echo "  $VAULT_PATH"
+  echo "  Files: $(find "$VAULT_PATH" -type f 2>/dev/null | wc -l | tr -d ' ')"
+  echo "  Size:  $(du -sh "$VAULT_PATH" 2>/dev/null | awk '{print $1}')"
+  ```
+
+  Then ask:
+
+  ```
+  If you're sure, type the absolute path back exactly as shown above to
+  confirm. Anything else cancels.
+
+  Path:
+  ```
+
+  Compare strings exactly (`[ "$typed" = "$VAULT_PATH" ]`, case-sensitive,
+  no trailing-slash normalization). Only on exact match:
+  `rm -rf "$VAULT_PATH/"`. On any mismatch: bail with
+  `Path didn't match -- vault preserved.`.
+
+## 5. Done
 
 ```
-✓ Claude Cortex uninstalled.
+[ok] Claude Cortex uninstalled.
 
 The system has been removed from ~/.claude/. Restart Claude Code (or open a
 new session) for changes to take effect.

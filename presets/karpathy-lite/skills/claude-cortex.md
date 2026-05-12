@@ -13,7 +13,7 @@ top-level contract lives in `~/.claude/CLAUDE.md`; this file is the depth.
 - Vault location and runtime config — `~/.claude/CLAUDE.md` (between
   `<!-- claude-cortex:begin v1 -->` delimiters)
 - Persistent install metadata — `<vault>/.claude-cortex/config.yaml`
-- Session id discovery — § Session ID below
+- Session id discovery — Session ID below
 
 ## Frontmatter Schema (full)
 
@@ -26,7 +26,7 @@ title: "<required, human-readable>"
 created: 2026-05-12T11:30:00Z      # ISO-8601 UTC
 updated: 2026-05-12T11:30:00Z      # ISO-8601 UTC
 tags: [<free-form list>]
-source_session: <session-id>       # see § Session ID
+source_session: <session-id>       # see Session ID below
 ---
 ```
 
@@ -114,7 +114,7 @@ When a flow needs a `project:` value and none was given:
 
 When writing to `inbox/<W-ID>/`:
 
-1. Discover session id (§ Session ID).
+1. Discover session id (see Session ID section).
 2. If `inbox/<W-ID>/` does not exist:
    - `mkdir -p inbox/<W-ID>`
    - Create `inbox/<W-ID>/sessions.yaml`:
@@ -141,7 +141,7 @@ When writing to `inbox/<W-ID>/`:
 4. Write the staged note with full frontmatter (`type: scratch`) plus body.
 5. Update `inbox/_index.md` "Active staging folders" with the W-ID and
    current `last_touched`.
-6. Announce in chat: `Staged → inbox/<W-ID>/<slug>.md`
+6. Announce in chat: `Staged: inbox/<W-ID>/<slug>.md`
 
 ## `_index.md` Auto-Maintenance
 
@@ -151,7 +151,7 @@ When you create a new file in any folder:
    frontmatter if not.
 2. Add an entry under `## Contents`:
    ```
-   - [<slug>] — <one-line description, 50-90 chars>
+   - [<slug>] -- <one-line description, 50-90 chars>
    ```
 3. Update `last_updated:` in the frontmatter to today's date (UTC).
 
@@ -194,7 +194,7 @@ plus the `work_item:`, `project:`, `duration_days:`, `related:` fields.
 Plan the archive operation:
 
 ```
-inbox/<W-ID>/  →  inbox/.archive/<W-ID>/
+inbox/<W-ID>/  ->  inbox/.archive/<W-ID>/
 ```
 
 Plan all `_index.md` updates:
@@ -208,30 +208,30 @@ Plan all `_index.md` updates:
 Show the user, in one message:
 
 ```
-Retro plan for W-<ID> — "<title from sessions.yaml>"
+Retro plan for W-<ID> -- "<title from sessions.yaml>"
 
   PROMOTE:
     inbox/<W-ID>/decision-cache-ttl-30m.md
-      → projects/<project>/decisions/2026-05-12-cache-ttl.md
+      -> projects/<project>/decisions/2026-05-12-cache-ttl.md
     inbox/<W-ID>/soql-failing-rows.md
-      → projects/<project>/queries/soql/find-failing-rows.md
+      -> projects/<project>/queries/soql/find-failing-rows.md
 
   EXTRACT:
     inbox/<W-ID>/splunk-trace.md
-      → insights/debugging/splunk-pagination-gotcha.md (durable lesson)
+      -> insights/debugging/splunk-pagination-gotcha.md (durable lesson)
       summary into retro (transient details)
 
   APPEND:
     (none)
 
   DISCARD:
-    inbox/<W-ID>/question-ask-jane.md (transient — mentioned in retro)
+    inbox/<W-ID>/question-ask-jane.md (transient -- mentioned in retro)
 
   SYNTHESIZE:
     retros/<project>/2026-05-12-W-<ID>-<slug>.md (new)
 
   ARCHIVE:
-    inbox/<W-ID>/ → inbox/.archive/<W-ID>/
+    inbox/<W-ID>/ -> inbox/.archive/<W-ID>/
 
   INDEX UPDATES:
     projects/<project>/decisions/_index.md
@@ -274,18 +274,18 @@ Produce a single message that reorients the user.
 3. Present:
 
 ```
-Work item:   W-<ID> — "<title>"
+Work item:   W-<ID> -- "<title>"
 Started:     2026-04-20 (22 days ago)
 Last touched: 2026-04-25 (17 days ago)
 
 Sessions:
-  • <id1> (2026-04-20) — "<summary>"
-  • <id2> (2026-04-25) — "<summary>"
+  - <id1> (2026-04-20) -- "<summary>"
+  - <id2> (2026-04-25) -- "<summary>"
 
 Staged notes:
-  • notes.md                 — running task list
-  • soql-query-failing-rows.md — query found 2400 bad rows
-  • decision-cache-ttl-30m.md — cache TTL choice + rationale
+  - notes.md                 -- running task list
+  - soql-query-failing-rows.md -- query found 2400 bad rows
+  - decision-cache-ttl-30m.md -- cache TTL choice + rationale
 
 Open questions (extracted from notes' frontmatter and headings):
   - rate limit per-org vs per-user?
@@ -299,13 +299,19 @@ Suggested next actions:
 
 ## Stale Detection
 
-At session start, if any `inbox/W-*/sessions.yaml` has
-`last_touched` > {{stale_staging_days}} days ago: surface a one-line notice
-in your first response of the session:
+At session start, read the user's stale threshold from the
+`Stale-staging threshold:` line of the cortex block in `~/.claude/CLAUDE.md`
+(it carries an integer). If any `inbox/W-*/sessions.yaml` has `last_touched`
+older than that many days ago, surface a one-line notice in your first
+response of the session:
 
 ```
-You have N stale staging folder(s) (>14d). Run /triage-inbox to handle them.
+You have N work item(s) you haven't touched in over <stale-threshold> days.
+Run /triage-inbox to wrap them up, defer them, or discard.
 ```
+
+`N` is the count of stale work items; `<stale-threshold>` is the integer
+from the config line above.
 
 Don't block the user's actual question.
 
@@ -325,10 +331,11 @@ When the user invokes `/refresh-index <folder>`:
 Never write a literal credential value into any vault file. If the user
 asks, refuse and offer a reference instead:
 
-> I can't write `<value>` into the vault — Cortex's safety rule forbids
-> literal secrets even for mocked/test creds. Want me to write a reference
-> like `op://Engineering/agentforce-test-user/password`, or a keychain
-> item name, instead?
+> I can't write that value into the vault -- Cortex's safety rule keeps
+> literal secrets out of saved notes, including mocked or test credentials.
+> Want me to save a reference instead? For example:
+> `op://Engineering/agentforce-test-user/password` (a 1Password reference)
+> or a keychain item name. Either is safe to commit alongside your notes.
 
 ## Pitfalls
 

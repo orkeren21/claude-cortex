@@ -13,7 +13,7 @@ Goal: surface stale `inbox/W-*/` folders and let the user act on each.
 ## Steps
 
 1. **Read the cortex skill at** `~/.claude/skills/claude-cortex/claude-cortex.md`,
-   specifically § Stale Detection and § Retro Synthesis.
+   specifically the "Stale Detection" and "Retro Synthesis" sections.
 
 2. **Parse arguments:**
    - `--stale-days=N` (default 14, sprint-aligned)
@@ -22,7 +22,7 @@ Goal: surface stale `inbox/W-*/` folders and let the user act on each.
 3. **Scan `inbox/W-*/sessions.yaml`** for `last_touched` older than the
    threshold.
 
-4. **For each stale folder, present a brief** (per § Resume Brief, abbreviated)
+4. **For each stale folder, present a brief** (per the "Resume Brief" section, abbreviated)
    and offer:
    ```
    (a) Retro now — invoke /retro <W-ID>.

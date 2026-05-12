@@ -19,14 +19,14 @@ commands, SessionStart hook, CLAUDE.md block, and persistent config.
 For every file you'll create/modify, present the path and the diff/content,
 and wait for explicit "apply" before writing.
 
-The single Plan-and-confirm gate in §5 authorizes the overall install, but
-each individual write step in §6 still presents its diff before applying so
+The single Plan-and-confirm gate in section 5 authorizes the overall install, but
+each individual write step in section 6 still presents its diff before applying so
 the user sees exactly what is changing on disk at each step.
 
 **Ask exactly one question per turn.** Do not batch questions across sections.
 Do not present multiple prompts and ask the user to "reply with your picks".
 Wait for the user's answer before asking the next question. This applies to
-every prompt in sections §1, §3, and §4. The user-facing experience must be a
+every prompt in sections 1, 3, and 4. The user-facing experience must be a
 real conversation, one question at a time, in order.
 
 **Use plain ASCII for terminal output.** Prefer `-` (hyphen) and `--`
@@ -34,7 +34,7 @@ real conversation, one question at a time, in order.
 out to the user. Do not use box-drawing characters or smart quotes. Plain
 ASCII renders consistently across every terminal.
 
-## §0 — Preflight
+## 0. Preflight
 
 Run these checks. If any fail, bail with a clear message.
 
@@ -68,7 +68,7 @@ Run these checks. If any fail, bail with a clear message.
    - If yes: continue.
    - If no: print `~/.claude not found -- install Claude Code first.` and bail.
 
-4. **`jq` check.** macOS does not ship `jq`, and §6 needs it for safe
+4. **`jq` check.** macOS does not ship `jq`, and section 6 needs it for safe
    `settings.json` edits.
 
    ```bash
@@ -95,10 +95,10 @@ Run these checks. If any fail, bail with a clear message.
    From here on, paths like `presets/karpathy-lite/...` should be read as
    `"$CORTEX_REPO/presets/karpathy-lite/..."`.
 
-## §1 — Pick where Claude Cortex will live
+## 1. Pick where Claude Cortex will live
 
 This is the first user prompt. Ask it on its own; wait for the answer; then
-move on to §2.
+move on to section 2.
 
 1. Search common Obsidian vault paths:
 
@@ -157,13 +157,13 @@ move on to §2.
 
 4. Store the chosen path in a variable conceptually called `<vault_path>`.
 
-**After the user answers §1, proceed to §2. Do not ask any other questions
+**After the user answers section 1, proceed to section 2. Do not ask any other questions
 until you have a vault path.**
 
-## §2 — Pick a folder structure
+## 2. Pick a folder structure
 
 This is the SECOND user prompt. Ask it on its own; wait for the answer; then
-move on to §3.
+move on to section 3.
 
 The "preset" determines how Cortex organizes folders inside the vault: where
 retros live, where notes get filed, what counts as a "project" vs. a topical
@@ -203,17 +203,17 @@ retros live, where notes get filed, what counts as a "project" vs. a topical
    - Anything else -> restate and ask again.
 
 3. Once the user picks `1`, store `<preset>` as `karpathy-lite`. Confirm in
-   one line and proceed to §3:
+   one line and proceed to section 3:
 
    ```
    [ok] Folder structure: Karpathy-lite.
    ```
 
-**After the user answers §2, proceed to §3.**
+**After the user answers section 2, proceed to section 3.**
 
-## §3 — How proactive should Cortex be?
+## 3. How proactive should Cortex be?
 
-Ask the following as a single message and stop. Do not include §4 questions in
+Ask the following as a single message and stop. Do not include section 4 questions in
 the same message. Wait for the user's answer before continuing.
 
 The "auto-capture mode" controls how aggressively Cortex saves notes for you
@@ -240,16 +240,16 @@ Pick one (a/b/c/d).
 Accept `a`, `b`, `c`, `d` or the full word (`aggressive`, `balanced`, `minimal`,
 `off`). On any other input, restate the options and ask again.
 
-Store the answer as `<auto_capture_mode>`. Then proceed to §4.
+Store the answer as `<auto_capture_mode>`. Then proceed to section 4.
 
-## §4 — A few small choices
+## 4. A few small choices
 
 Three separate prompts. Ask each one as its own message, wait for the answer,
 then ask the next. Do NOT batch them. Do NOT ask the user to "answer all of
 the below". Each prompt should explain itself; don't assume the user knows
 the jargon.
 
-**§4.1 -- Daily notes folder.** Send this as a single message and stop:
+**4.1 -- Daily notes folder.** Send this as a single message and stop:
 
 ```
 Want a daily/ folder created in the vault for one-note-per-day journaling?
@@ -264,7 +264,7 @@ Want a daily/ folder created in the vault for one-note-per-day journaling?
 
 Default on empty input is `N`. Store as `<daily_notes>`.
 
-**§4.2 -- "Stale" reminder threshold.** Only after §4.1 is answered, send this
+**4.2 -- "Stale" reminder threshold.** Only after 4.1 is answered, send this
 as a single message and stop:
 
 ```
@@ -284,7 +284,7 @@ for the default.
 Default on empty input is `14`. Accept any positive integer. Store as
 `<stale_days>`.
 
-**§4.3 -- Auto-update the folder index files.** Only after §4.2 is answered,
+**4.3 -- Auto-update the folder index files.** Only after 4.2 is answered,
 send this as a single message and stop:
 
 ```
@@ -301,9 +301,9 @@ update them manually (or run /refresh-index <folder> later).
 
 Default on empty input is `Y`. Store as `<index_auto_maintenance>`.
 
-After §4.3 is answered, proceed to §5.
+After 4.3 is answered, proceed to section 5.
 
-## §5 — Plan & confirm
+## 5. Plan & confirm
 
 Show the user a complete plan. Use plain ASCII; explain each line briefly so
 the user understands what they are confirming:
@@ -340,10 +340,10 @@ Proceed? [y/N]
 
 Wait for `y`. On anything else, bail with `Install cancelled.`.
 
-This confirmation authorizes the overall install. Per §Posture, each write
-step in §6 still shows its diff before applying.
+This confirmation authorizes the overall install. Per the Posture section, each write
+step in section 6 still shows its diff before applying.
 
-## §6 — Apply
+## 6. Apply
 
 **Source the installer helpers first.** They handle the subtle bits
 (newline normalization, delimiter-safe block append, idempotent yaml
@@ -360,7 +360,25 @@ This exposes `cortex_render_template`, `cortex_claude_md_has_block`,
 
 Execute the steps below in order. After each block, report `[ok] <what>`.
 
-1. **Skeleton.** For each path in
+1. **Skeleton.** Announce first, then apply, then confirm.
+
+   Announce:
+
+   ```
+   About to create the folder skeleton inside <vault_path>:
+     - inbox/             (with .archive/ subfolder for retro'd work)
+     - retros/
+     - insights/          (debugging/, architecture/, tooling/)
+     - projects/
+     - people/
+     - references/        (articles/, books/)
+
+   I'll also drop a small _index.md into each of the top-level folders so
+   I can scan it later without opening every file. If any of these already
+   exist in your vault, I'll skip them and leave your existing notes alone.
+   ```
+
+   Then for each path in
    `"$CORTEX_REPO/presets/karpathy-lite/preset.yaml"`'s `skeleton_folders:`,
    `mkdir -p <vault_path>/<folder>`. Then for each file in
    `"$CORTEX_REPO/presets/karpathy-lite/skeleton/"`, copy to `<vault_path>/`
@@ -373,7 +391,26 @@ Execute the steps below in order. After each block, report `[ok] <what>`.
    `cp -n` skips any destination that already exists. If something is
    skipped, log it so the user knows to inspect manually.
 
-2. **Vault config.**
+   After:
+
+   ```
+   [ok] Skeleton in place. Skipped (already existed): <list, or "none">.
+   ```
+
+2. **Vault config.** Announce first, then apply, then confirm.
+
+   Announce:
+
+   ```
+   About to save your install settings to:
+     <vault_path>/.claude-cortex/config.yaml
+
+   This file records the choices you just made (preset, save behavior, stale
+   threshold, etc.) so I can read them back later. Only Cortex looks at this
+   file -- it doesn't affect Obsidian.
+   ```
+
+   Then run:
 
    ```bash
    mkdir -p <vault_path>/.claude-cortex
@@ -392,7 +429,26 @@ Execute the steps below in order. After each block, report `[ok] <what>`.
    installed_at: <ISO-8601 UTC now>
    ```
 
-3. **Skill.** Copy non-destructively so a pre-existing user skill of the same
+   After:
+
+   ```
+   [ok] Config written to <vault_path>/.claude-cortex/config.yaml.
+   ```
+
+3. **Skill.** Announce first, then apply, then confirm.
+
+   Announce:
+
+   ```
+   About to install the Cortex skill at:
+     ~/.claude/skills/claude-cortex/claude-cortex.md
+
+   This is the procedural manual I read whenever you run a Cortex slash
+   command or I'm about to write into the vault. If a skill already exists
+   at that path, I'll skip it and tell you so you can inspect manually.
+   ```
+
+   Then copy non-destructively so a pre-existing user skill of the same
    name is not clobbered:
 
    ```bash
@@ -406,10 +462,33 @@ Execute the steps below in order. After each block, report `[ok] <what>`.
    fi
    ```
 
-4. **Slash commands.** Six files: `save-insight.md`, `save-to-inbox.md`,
-   `retro.md`, `resume-work.md`, `triage-inbox.md`, `refresh-index.md`. Copy
-   each non-destructively so pre-existing user slash commands of the same
-   name are never overwritten:
+   After:
+
+   ```
+   [ok] Skill installed.
+   ```
+
+   (Or, if the destination already existed: `[ok] Skill already present -- skipped.`)
+
+4. **Slash commands.** Announce first, then apply, then confirm.
+
+   Announce:
+
+   ```
+   About to install 6 slash commands at ~/.claude/commands/:
+     - save-to-inbox.md   -- stage a quick note for the active work item
+     - save-insight.md    -- save a durable lesson
+     - retro.md           -- wrap up a work item and file its notes
+     - resume-work.md     -- catch you up on a work item you stepped away from
+     - triage-inbox.md    -- handle work items that have gone stale
+     - refresh-index.md   -- rebuild a folder's _index.md listing
+
+   If you already have a command of the same name, I'll skip that one and
+   tell you, so your existing setup is never overwritten.
+   ```
+
+   Then copy each non-destructively so pre-existing user slash commands of
+   the same name are never overwritten:
 
    ```bash
    mkdir -p ~/.claude/commands
@@ -424,13 +503,40 @@ Execute the steps below in order. After each block, report `[ok] <what>`.
    done
    ```
 
-5. **Hook script.**
+   After:
+
+   ```
+   [ok] Slash commands installed. Skipped: <list, or "none">.
+   ```
+
+5. **Hook script.** Announce first, then apply, then confirm.
+
+   Announce:
+
+   ```
+   About to install the session-start hook at:
+     ~/.claude/hooks/claude-cortex-session-start.sh
+
+   This runs once when you start a Claude Code session. It records the
+   session ID so I can later say "this note came from that session" --
+   helpful when you come back to a work item days later. The next step
+   (settings.json) is where I actually register the hook to run; this step
+   just lays down the script.
+   ```
+
+   Then run:
 
    ```bash
    mkdir -p ~/.claude/hooks
    cp "$CORTEX_REPO/presets/karpathy-lite/hooks/session-start.sh" \
      ~/.claude/hooks/claude-cortex-session-start.sh
    chmod +x ~/.claude/hooks/claude-cortex-session-start.sh
+   ```
+
+   After:
+
+   ```
+   [ok] Hook script installed.
    ```
 
 6. **`~/.claude/settings.json` hook entry.**
@@ -510,9 +616,9 @@ Execute the steps below in order. After each block, report `[ok] <what>`.
    ```
 
    `VAULT_PATH`, `AUTO_CAPTURE_MODE`, `STALE_STAGING_DAYS`, and
-   `INDEX_AUTO_MAINTENANCE` are the values gathered in §1, §3, and §4.
+   `INDEX_AUTO_MAINTENANCE` are the values gathered in sections 1, 3, and 4.
 
-## §7 — Verify
+## 7. Verify
 
 1. **Sanity-check the install:**
 
@@ -562,7 +668,7 @@ Execute the steps below in order. After each block, report `[ok] <what>`.
    Restart Claude Code or open a new session for the SessionStart hook to fire.
    ```
 
-## §8 — Errors
+## 8. Errors
 
 - **Anywhere a step fails:** stop; report the failing step; tell the user
   what state the system is in (which steps succeeded, which didn't).

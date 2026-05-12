@@ -1,24 +1,18 @@
 ---
 folder: inbox
-purpose: Staging area for mid-flight work. All files here are temporary.
+purpose: Staging area for mid-flight notes. Files here are temporary.
 last_updated: 2026-05-12
 ---
 
-# Inbox — staging only
+# Inbox
 
-Work-item folders accumulate here during active work. Run `/retro <W-ID>` to
-synthesize them into durable destinations.
+This is where Claude drops quick notes for work items in progress (one
+folder per work item, named like W-123456). Notes here are temporary --
+when you finish a work
+item, run `/retro <W-ID>` and Claude will synthesize them into the right
+durable folders (insights/, projects/, etc.) and archive the staging copy.
 
-## Active staging folders
+If you stop touching a work item for a while, Claude will mention it at
+the start of your next session so you can wrap it up or set it aside.
 
-(None yet — Claude will list them here as they're created.)
-
-## Stale folders
-
-If any folder here has `last_touched` > 14 days, Claude will flag it at session
-start and offer `/triage-inbox`.
-
-## Archive
-
-Promoted staging folders move to `.archive/`. Read-only by convention; auditable
-for "which session wrote this?" forensics.
+You don't need to write anything in this file -- Claude maintains it.
