@@ -14,14 +14,14 @@ apply it atomically on approval, and report.
 ## Steps
 
 1. **Read the cortex skill at** `~/.claude/skills/claude-cortex/claude-cortex.md`,
-   specifically § Retro Synthesis. Follow it to the letter.
+   specifically the "Retro Synthesis" section. Follow it to the letter.
 
 2. **Resolve the W-ID:**
    - If `$ARGUMENTS` is a W-ID, use it.
    - Else: list `inbox/W-*/` folders sorted by `last_touched` desc. If
      exactly one exists, pick it. Else: ask the user which.
 
-3. **Execute § Retro Synthesis steps 1-5** from the skill.
+3. **Execute the "Retro Synthesis" section, steps 1-5,** from the skill.
 
 4. **Atomicity rule:** if any file write or `mv` fails partway through,
    restore: delete files written this run, `mv inbox/.archive/<W-ID>/
@@ -33,4 +33,4 @@ apply it atomically on approval, and report.
 - The retro is a fresh synthesis — do not just rename or copy a staged file.
 - Save the dispatch plan as `inbox/.archive/<W-ID>/dispatch-plan.md` for
   auditability before doing the moves.
-- Apply § Credentials Rule to every promoted/extracted note.
+- Apply the "Credentials Rule" section to every promoted/extracted note.

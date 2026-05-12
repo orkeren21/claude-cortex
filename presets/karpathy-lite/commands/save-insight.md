@@ -14,8 +14,8 @@ folder's `_index.md`, and report the path.
 ## Steps
 
 1. **Read the cortex skill at** `~/.claude/skills/claude-cortex/claude-cortex.md`.
-   You need § Frontmatter Schema, § Routing Table, § Session ID,
-   § Default Project Resolution, § `_index.md` Auto-Maintenance.
+   You need the "Frontmatter Schema", "Routing Table", "Session ID",
+   "Default Project Resolution", and "`_index.md` Auto-Maintenance" sections.
 
 2. **Resolve `type`:**
    - If `$ARGUMENTS` includes `type=...`, use that.
@@ -52,7 +52,7 @@ folder's `_index.md`, and report the path.
    ```
 
 8. **On approval, write the file and update parent `_index.md`** per the
-   skill's § `_index.md` Auto-Maintenance.
+   skill's "`_index.md` Auto-Maintenance" section.
 
 9. **Report:**
 
@@ -64,6 +64,6 @@ folder's `_index.md`, and report the path.
 
 - One file per invocation. If the user wants to capture multiple things,
   invoke `/save-insight` again or use `/retro` for a batch.
-- Apply § Credentials Rule before writing.
+- Apply the "Credentials Rule" section before writing.
 - If the destination already exists with the same slug, ask: append to
   existing, write with a different slug, or cancel.

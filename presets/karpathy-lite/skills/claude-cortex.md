@@ -13,7 +13,7 @@ top-level contract lives in `~/.claude/CLAUDE.md`; this file is the depth.
 - Vault location and runtime config — `~/.claude/CLAUDE.md` (between
   `<!-- claude-cortex:begin v1 -->` delimiters)
 - Persistent install metadata — `<vault>/.claude-cortex/config.yaml`
-- Session id discovery — § Session ID below
+- Session id discovery — Session ID below
 
 ## Frontmatter Schema (full)
 
@@ -26,7 +26,7 @@ title: "<required, human-readable>"
 created: 2026-05-12T11:30:00Z      # ISO-8601 UTC
 updated: 2026-05-12T11:30:00Z      # ISO-8601 UTC
 tags: [<free-form list>]
-source_session: <session-id>       # see § Session ID
+source_session: <session-id>       # see Session ID below
 ---
 ```
 
@@ -114,7 +114,7 @@ When a flow needs a `project:` value and none was given:
 
 When writing to `inbox/<W-ID>/`:
 
-1. Discover session id (§ Session ID).
+1. Discover session id (see Session ID section).
 2. If `inbox/<W-ID>/` does not exist:
    - `mkdir -p inbox/<W-ID>`
    - Create `inbox/<W-ID>/sessions.yaml`:

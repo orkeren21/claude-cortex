@@ -14,7 +14,7 @@ preserving hand-written prose sections.
 ## Steps
 
 1. **Read the cortex skill at** `~/.claude/skills/claude-cortex/claude-cortex.md`,
-   specifically § Refresh Index.
+   specifically the "Refresh Index" section.
 
 2. **Validate input:**
    - If `$ARGUMENTS` is empty, ask: "Which folder? (path relative to vault root)"

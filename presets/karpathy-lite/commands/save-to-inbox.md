@@ -14,8 +14,8 @@ the staging procedure documented in the claude-cortex skill.
 ## Steps
 
 1. **Read the cortex skill at** `~/.claude/skills/claude-cortex/claude-cortex.md`
-   if you haven't already this session. You need § Inbox Staging Procedure,
-   § Frontmatter Schema, § Session ID, § Default Project Resolution.
+   if you haven't already this session. You need the "Inbox Staging Procedure",
+   "Frontmatter Schema", "Session ID", and "Default Project Resolution" sections.
 
 2. **Resolve the W-ID:**
    - If `$ARGUMENTS` starts with `W-` followed by 6+ digits, use that.
@@ -33,7 +33,7 @@ the staging procedure documented in the claude-cortex skill.
    similar after a specific message, that message's content is the body.
    Otherwise, ask: "What should I stage? Paste it here or describe it."
 
-5. **Resolve the project** per § Default Project Resolution.
+5. **Resolve the project** per the "Default Project Resolution" section.
 
 6. **Apply the Inbox Staging Procedure** from the skill.
 
@@ -47,4 +47,4 @@ the staging procedure documented in the claude-cortex skill.
 
 - Do not promote to a durable folder. This is staging only.
 - Do not skip the `sessions.yaml` update or the `_index.md` update.
-- Do not write literal credentials per § Credentials Rule.
+- Do not write literal credentials per the "Credentials Rule" section.
