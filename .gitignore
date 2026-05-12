@@ -5,3 +5,7 @@
 node_modules/
 .env
 .env.*
+
+# Test artifacts
+tests/.tmp/
+tests/.bats-output/
