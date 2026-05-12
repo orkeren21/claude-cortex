@@ -35,7 +35,7 @@ Inspired by Andrej Karpathy's locally-curated Obsidian-vault practice; productiz
 - Not a task tracker. Status fields like `priority:` are deliberately absent; ADRs get `status:` because it's intrinsic to ADRs.
 - Not a credential store. Vault stores *references* to secrets (1Password, keychain), never literal values.
 - Not a Claude Code plugin (yet). Distribution v1 is paste-and-run; plugin packaging is a future evolution after the shape stabilizes.
-- Not cross-platform-first. v1 installer targets macOS only (Homebrew-based Obsidian check). Linux users follow `docs/manual-setup.md`. Windows is not supported.
+- macOS only in v1. Linux and Windows are out of scope.
 
 ## 3. Glossary
 
@@ -176,9 +176,18 @@ Three components, three responsibility lines.
 │       │   └── _index.md
 │       ├── decisions/             ← ADR-style
 │       │   └── _index.md
-│       ├── queries/               ← canonical queries, by kind
-│       │   ├── splunk.md
-│       │   └── soql.md
+│       ├── queries/               ← canonical queries, one file per query
+│       │   ├── _index.md
+│       │   ├── splunk/
+│       │   │   ├── _index.md
+│       │   │   ├── auth-debugging-401-spike.md
+│       │   │   └── rate-limit-by-org.md
+│       │   ├── soql/
+│       │   │   └── _index.md
+│       │   ├── argus/
+│       │   │   └── _index.md
+│       │   └── graphql/
+│       │       └── _index.md
 │       ├── org-ids.md
 │       ├── secrets.md             ← REFERENCES only (op://, keychain)
 │       └── open-questions.md
@@ -204,7 +213,7 @@ Three components, three responsibility lines.
 | `insight` | `insights/<topic>/<slug>.md` |
 | `architecture` | `projects/<project>/architecture/<slug>.md` |
 | `decision` | `projects/<project>/decisions/YYYY-MM-DD-<slug>.md` |
-| `query` | `projects/<project>/queries/<query_kind>.md` (append; e.g. `splunk.md`, `soql.md`, `sql.md`) |
+| `query` | `projects/<project>/queries/<query_kind>/<slug>.md` (one file per query) |
 | `person` | `people/<firstname>-<lastname>-<role-slug>.md` |
 | `reference` | `references/<kind>/<slug>.md` |
 
@@ -277,7 +286,7 @@ supersedes: [decisions/2026-04-01-old.md]
 
 # type: query
 project: agentforce-actions
-query_kind: splunk | soql | sql
+query_kind: splunk | soql | sql | argus | graphql | curl | <other-kebab-case>
 used_in: [W-123456, W-123777]
 
 # type: person
@@ -326,7 +335,7 @@ One-paragraph what-belongs-here / what-doesn't.
 
 ## See also
 - ../tooling/_index.md
-- ../../projects/<repo>/splunk-queries.md
+- ../../projects/<repo>/queries/splunk/_index.md
 ```
 
 ### 7.2 Two-tier read pattern
@@ -404,7 +413,7 @@ What it does:
   4. PROPOSE A DISPATCH PLAN:
        For each staged file, pick one of:
          - PROMOTE   → write to projects/<project>/decisions/<...> (new file)
-         - APPEND    → append to an existing file (e.g. projects/<project>/queries/splunk.md)
+         - APPEND    → append a section to an existing file (rare; e.g. additional context to an existing decision or query note)
          - EXTRACT   → factor a portion into insights/<topic>/<slug>.md
          - DISCARD   → transient, drop
        Then SYNTHESIZE retros/<project>/YYYY-MM-DD-W-<ID>-<slug>.md
@@ -615,7 +624,6 @@ claude-cortex/
 ├── docs/
 │   ├── specs/
 │   │   └── 2026-05-12-second-brain-design.md  ← THIS DOC
-│   ├── manual-setup.md            ← non-paste-and-run path
 │   ├── troubleshooting.md
 │   ├── presets-comparison.md
 │   ├── frontmatter-reference.md
@@ -657,9 +665,7 @@ Estimated time: 2–3 minutes.
 
 ```
 §0  Preflight
-    - Check OS: macOS only for the installer.
-        - Linux: bail with pointer to docs/manual-setup.md.
-        - Windows: bail with "not supported".
+    - Check OS: macOS only. Bail with "not supported" otherwise.
     - Check Obsidian.app present; if not, offer `brew install --cask obsidian`
     - Check ~/.claude/ exists (if not, prompt to install Claude Code first)
 
@@ -753,8 +759,7 @@ Each section shows the action it's about to take and waits for confirmation. Ins
 - **Embeddings / semantic search over the vault.** Future enhancement; v1 relies on grep + `_index.md` navigation.
 - **Multi-vault support.** v1 supports one vault per Claude Code install. Multi-vault could come via per-project `CLAUDE.md` overrides later.
 - **Vault sync conflicts.** If the user runs Obsidian Sync / iCloud / Dropbox on the vault, conflicts are the user's problem. v1 documents the recommendation; it doesn't resolve.
-- **Linux installer.** v1 installer is macOS-only. Linux users follow `docs/manual-setup.md`. A Linux installer flow is a v1.x candidate.
-- **Windows.** Not supported in v1.
+- **Linux and Windows.** Not supported in v1. macOS only.
 - **Plugin packaging.** v1 is paste-and-run; plugin packaging is a future evolution.
 - **Telemetry / usage analytics.** None.
 
@@ -769,7 +774,6 @@ These are decisions to make during the implementation plan, not now:
 5. **Where Obsidian's own `.obsidian/` folder fits.** Vault root has `.obsidian/`; the skeleton must not clobber it. Likely just an "if exists, leave it" rule.
 6. **Multi-project work items.** A single `W-<ID>/` may produce notes spanning two projects (e.g. an integration touching `agentforce-actions` and `api-gateway`). Retro routing currently assumes one project per work item. Likely resolution: per-staged-file `project:` frontmatter overrides a folder-level default; the dispatch plan splits accordingly.
 7. **Default project resolution.** When `/save-to-inbox` runs with no project context, what's the project? Likely: infer from `cwd` (the basename of the current working directory), with override on retro.
-8. **Linux install path.** `brew --cask obsidian` is macOS-only. v1 installer covers macOS only; Linux support is documented as "manual setup" via `docs/manual-setup.md` until an installer path is added.
 
 ## 16. Success Criteria
 
