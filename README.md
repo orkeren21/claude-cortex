@@ -53,8 +53,6 @@ Edit either file directly to change settings. The CLAUDE.md block is the runtime
 
 ## How it works
 
-See [docs/specs/2026-05-12-second-brain-design.md](docs/specs/2026-05-12-second-brain-design.md) for the full design.
-
 The short version:
 - Claude reads the vault freely as ambient context.
 - During work, Claude auto-stages notes into `inbox/<W-ID>/` (announced in one line).

@@ -10,3 +10,6 @@ node_modules/
 tests/.tmp/
 tests/.bats-output/
 tests/smoke/.sandbox/
+
+# Local-only design docs (preserved in working tree, not tracked)
+docs/
