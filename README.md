@@ -7,7 +7,7 @@ Inspired by [Andrej Karpathy's locally-curated Obsidian-vault practice](https://
 ## What you get
 
 - A vault folder structure tuned for engineers managing many parallel projects.
-- Six slash commands: `/save-to-inbox`, `/save-insight`, `/retro`, `/resume-work`, `/triage-inbox`, `/refresh-index`.
+- Six slash commands for explicit capture and review (see [Slash commands](#slash-commands) below).
 - Quick capture: when Claude notices something worth keeping (a query that
   worked, a decision, a gotcha), it drops a quick note in the inbox and
   tells you in one line. You can always say "don't bother" and turn it down
@@ -18,6 +18,21 @@ Inspired by [Andrej Karpathy's locally-curated Obsidian-vault practice](https://
 - Resume after a break: each work item remembers which past sessions touched
   it, so when you come back you can recap or rewind in one command.
 - Cleanly delimited additions to `~/.claude/CLAUDE.md` -- uninstall removes them without touching anything else.
+
+## Slash commands
+
+| Command          | What it does                                            |
+|------------------|---------------------------------------------------------|
+| `/save-to-inbox` | Stage a quick note for the current work item.          |
+| `/save-insight`  | Save a durable note (lesson, decision, query, etc.).   |
+| `/retro <W-ID>`  | Wrap up a work item: file staged notes, write a retro. |
+| `/resume-work`   | Catch you up on a work item you stepped away from.     |
+| `/triage-inbox`  | Handle work items that have gone stale.                |
+| `/refresh-index` | Rebuild a folder's contents listing.                   |
+
+You don't need to memorize these. Cortex offers them at the right
+moments, and you can also just talk to Claude -- "save this", "retro
+W-123456", "what was I working on?" all work.
 
 ## Install (macOS only in v0.1.0)
 
@@ -75,12 +90,12 @@ The short version:
 
 ## Status
 
-**v0.1.0 -- early.** The system works end-to-end on macOS, but you're an
-early user. Expect rough edges in the prompts and the occasional bug. Your
-vault is yours -- Claude Cortex never deletes files inside it, and uninstall
-removes only the Cortex side (skill, commands, hook, the CLAUDE.md block)
-and leaves your vault untouched. Issues and PRs welcome at
-https://github.com/orkeren21/claude-cortex.
+**v0.1.0 -- macOS only.** The install flow, capture flows, retro
+synthesis, and uninstall are all working end-to-end. Issues and PRs
+welcome at https://github.com/orkeren21/claude-cortex.
+
+Your vault is yours: Cortex never deletes files inside it, and uninstall
+removes only the Cortex side (skill, commands, hook, the CLAUDE.md block).
 
 ## License
 
