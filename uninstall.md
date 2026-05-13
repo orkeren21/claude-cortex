@@ -119,7 +119,7 @@ Will remove:
   - SessionStart hook entry from ~/.claude/settings.json (only the entry whose command points at our hook)
   - <vault_path>/.claude-cortex/
 
-Will NOT touch (asked separately in section 4):
+Will NOT touch:
   - <vault_path>/inbox/
   - <vault_path>/inbox/.archive/
   - <vault_path>/retros/
