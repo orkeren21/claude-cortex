@@ -1,1 +1,9 @@
 *.tmpl linguist-language=Markdown
+
+# Count Markdown in the language stats. By default Linguist treats Markdown
+# as prose/documentation and hides it from the repo's language breakdown,
+# but this project is *mostly* prose -- install/uninstall procedures, the
+# skill manual, slash-command instructions, vault skeleton index files --
+# and the language chart should reflect that reality.
+*.md linguist-detectable=true
+*.md linguist-documentation=false
