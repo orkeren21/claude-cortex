@@ -407,11 +407,33 @@ mode.
    `cp -n` skips any destination that already exists. If something is
    skipped, log it so the user knows to inspect manually.
 
-   After:
+   After: compute the list of pre-existing vault-root files (so the
+   user knows Cortex saw them and chose to leave them alone):
+
+   ```bash
+   preexisting_root_files="$(
+     find "$VAULT_PATH" -maxdepth 1 -type f \
+       ! -name '_index.md' \
+       ! -name '.*' \
+       -exec basename {} \;
+   )"
+   # If empty, render the report as "none". Otherwise comma-separate.
+   if [ -z "$preexisting_root_files" ]; then
+     preexisting_summary="none"
+   else
+     preexisting_summary="$(echo "$preexisting_root_files" | tr '\n' ',' | sed 's/,$//' | sed 's/,/, /g')"
+   fi
+   ```
+
+   Then report:
 
    ```
-   [ok] Skeleton in place. Skipped (already existed): <list, or "none">.
+   [ok] Skeleton in place.
+        Skipped (already existed): <list, or "none">.
+        Pre-existing vault root files (left untouched): <preexisting_summary>.
    ```
+
+   `find` is BSD-find compatible -- v0.1.0 is macOS-only.
 
 2. **Vault config.** Announce, then apply.
 
@@ -466,9 +488,14 @@ mode.
    About to install the Cortex skill at:
      ~/.claude/skills/claude-cortex/claude-cortex.md
 
-   This is the procedural manual I read whenever you run a Cortex slash
-   command or I'm about to write into the vault. If a skill already exists
-   at that path, I'll skip it and tell you so you can inspect manually.
+   What this skill is: the procedural manual I read whenever you run a
+   Cortex slash command or I'm about to write into the vault. About 350
+   lines covering frontmatter schema, routing rules, retro synthesis,
+   session ID lookup, and the credentials-safety rule. Lives at the path
+   above; doesn't run automatically -- I read it on demand.
+
+   If a skill already exists at that path, I'll skip it and tell you so
+   you can inspect manually.
    ```
 
    Then copy non-destructively so a pre-existing user skill of the same
@@ -585,8 +612,9 @@ mode.
    test -f ~/.claude/settings.json || echo '{}' > ~/.claude/settings.json
 
    cmd_path="$HOME/.claude/hooks/claude-cortex-session-start.sh"
-   tmp="$(mktemp)"
 
+   # Stage:
+   tmp="$(mktemp)"
    jq --arg cmd "$cmd_path" '
      # Normalize SessionStart to an array.
      .hooks.SessionStart = (
@@ -602,9 +630,15 @@ mode.
        end
    ' ~/.claude/settings.json > "$tmp"
 
-   # Show diff and confirm BEFORE applying.
+   # Show:
    diff -u ~/.claude/settings.json "$tmp" || true
-   # Wait for user confirmation, then:
+
+   # Gate: present the diff above to the user. Privileged write.
+   # Prompt: Proceed? [y/N] (default no)
+   # On y: continue to Apply.
+   # On anything else: rm -f "$tmp" and bail with "Install cancelled."
+
+   # Apply:
    mv "$tmp" ~/.claude/settings.json
    ```
 
@@ -681,8 +715,21 @@ mode.
    The helpers already handle the create-if-missing case, trailing-newline
    normalization, and delimiter wrapping that Task 2 tested.
 
+   Announce:
+
+   ```
+   About to append the Cortex block to ~/.claude/CLAUDE.md.
+
+   What this block is: the runtime contract I follow in every Claude
+   Code session -- read/write rules for the vault, auto-capture
+   heuristics, the trigger table, the frontmatter requirement. About 90
+   lines, wrapped between dedicated delimiters
+   (<!-- claude-cortex:begin v1 --> ... <!-- claude-cortex:end -->) so
+   the rest of your CLAUDE.md is untouched. Diff below.
+   ```
+
    ```bash
-   # Render the CLAUDE.md template into a tmp file.
+   # Stage:
    rendered="$(mktemp)"
    cortex_render_template "$CORTEX_REPO/presets/karpathy-lite/CLAUDE.md.tmpl" \
      VAULT_PATH="$VAULT_PATH" \
@@ -696,13 +743,19 @@ mode.
    if cortex_claude_md_has_block ~/.claude/CLAUDE.md; then
      echo "[ok] Cortex block already present in ~/.claude/CLAUDE.md -- skipping append."
    else
-     # Append the rendered block (handles file-doesn't-exist, trailing newlines,
-     # delimiter wrapping). Show diff before applying.
      preview="$(mktemp)"
      cp ~/.claude/CLAUDE.md "$preview" 2>/dev/null || : > "$preview"
      cortex_claude_md_append_block "$preview" "$rendered"
+
+     # Show:
      diff -u ~/.claude/CLAUDE.md "$preview" 2>/dev/null || cat "$preview"
-     # Wait for user confirmation, then:
+
+     # Gate: present the diff above. Privileged write.
+     # Prompt: Proceed? [y/N] (default no)
+     # On y: continue to Apply.
+     # On anything else: rm -f "$preview" and bail with "Install cancelled."
+
+     # Apply:
      mv "$preview" ~/.claude/CLAUDE.md
    fi
    ```
