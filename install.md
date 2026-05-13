@@ -354,7 +354,12 @@ mode, each non-privileged step also shows a diff/preview and asks
 CLAUDE.md) are privileged and ALWAYS show diff + ask `Proceed? [y/N]`,
 regardless of mode.
 
-1. **Skeleton.** Announce first, then apply, then confirm.
+1. **Skeleton.** Announce, then apply.
+
+   In quiet mode (the default), only the announce block prints; the
+   skeleton is created and a one-line `[ok]` summary follows. In
+   verbose mode, after the announce block, ask `Continue? [Y/n]` and
+   wait for the answer before creating folders.
 
    Announce:
 
@@ -391,7 +396,11 @@ regardless of mode.
    [ok] Skeleton in place. Skipped (already existed): <list, or "none">.
    ```
 
-2. **Vault config.** Announce first, then apply, then confirm.
+2. **Vault config.** Announce, then apply.
+
+   Quiet mode: announce + write + `[ok]`. Verbose mode: also show the
+   YAML content that's about to be written and ask `Continue? [Y/n]`
+   before writing.
 
    Announce:
 
@@ -428,7 +437,11 @@ regardless of mode.
    [ok] Config written to <vault_path>/.claude-cortex/config.yaml.
    ```
 
-3. **Skill.** Announce first, then apply, then confirm.
+3. **Skill.** Announce, then apply.
+
+   Quiet mode: announce + copy + `[ok]`. Verbose mode: also note the
+   source path and the destination path side-by-side and ask
+   `Continue? [Y/n]` before copying.
 
    Announce:
 
@@ -463,7 +476,11 @@ regardless of mode.
 
    (Or, if the destination already existed: `[ok] Skill already present -- skipped.`)
 
-4. **Slash commands.** Announce first, then apply, then confirm.
+4. **Slash commands.** Announce, then apply.
+
+   Quiet mode: announce + copy loop + `[ok]`. Verbose mode: list the
+   seven destination paths and ask `Continue? [Y/n]` before the loop
+   runs.
 
    Announce:
 
@@ -503,7 +520,10 @@ regardless of mode.
    [ok] Slash commands installed. Skipped: <list, or "none">.
    ```
 
-5. **Hook script.** Announce first, then apply, then confirm.
+5. **Hook script.** Announce, then apply.
+
+   Quiet mode: announce + copy + chmod + `[ok]`. Verbose mode: also
+   show the source path and ask `Continue? [Y/n]` before the copy.
 
    Announce:
 
