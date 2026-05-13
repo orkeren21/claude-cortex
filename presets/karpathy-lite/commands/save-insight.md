@@ -39,7 +39,14 @@ folder's `_index.md`, and report the path.
 4. **Resolve type-specific fields per the schema:**
    - For `insight`: `topic` (subfolder under `insights/`).
    - For `architecture` / `decision` / `query`: `project`.
-   - For `query`: also `query_kind` (splunk | soql | sql | argus | graphql | curl | other).
+   - For `query`: also `query_kind` -- a kebab-case tag for the tool the
+     query targets. If the user names a tool you recognize (sql, graphql,
+     curl, splunk, datadog, cloudwatch, bigquery, kibana, prometheus,
+     etc.), use it as-is. If the tool name is unfamiliar, ask once: "Is
+     this a logging tool, a database query, an HTTP call, or something
+     else? What should I tag it as?" Save the kebab-case answer as
+     `query_kind`. Don't block on validation -- accept whatever the user
+     says.
    - For `decision`: `status` (accepted by default).
    - For `person`: `role`, `team`, `expertise`.
    - For `reference`: `kind` (article | book | other).

@@ -35,26 +35,26 @@ source_session: <session-id>       # see Session ID below
 ```yaml
 # type: retro
 work_item: W-123456
-project: agentforce-actions
+project: payments-api
 duration_days: 4
-related: [insights/debugging/splunk-pagination-gotcha.md]
+related: [insights/debugging/pagination-cursor-reset.md]
 
 # type: insight
 topic: debugging                   # subfolder under insights/
-applies_to: [agentforce-actions, udd-entity-builder]
+applies_to: [payments-api, inventory-service]
 
 # type: architecture
-project: agentforce-actions
+project: payments-api
 component: rate-limiter
 
 # type: decision
-project: agentforce-actions
+project: payments-api
 status: accepted | superseded | proposed
 supersedes: [decisions/2026-04-01-old.md]
 
 # type: query
-project: agentforce-actions
-query_kind: splunk | soql | sql | argus | graphql | curl | <other-kebab-case>
+project: payments-api
+query_kind: <kebab-case tag for the tool the query targets>
 used_in: [W-123456, W-123777]
 
 # type: person
@@ -62,6 +62,13 @@ role: "Staff Engineer"
 team: "Platform Foundations"
 expertise: [auth, rate-limiting]
 ```
+
+**About `query_kind`.** Use a kebab-case tag for whatever tool the query
+targets. Common ones the agent recognizes: `sql`, `graphql`, `curl`,
+`splunk`, `datadog`, `cloudwatch`, `bigquery`, `kibana`, `prometheus`. If
+you use a tool the agent doesn't recognize (internal observability tool,
+custom DSL), just give it a kebab-case name -- the agent will save it as
+you said.
 
 ## Routing Table
 
@@ -218,8 +225,8 @@ Retro plan for W-<ID> -- "<title from sessions.yaml>"
       -> projects/<project>/queries/soql/find-failing-rows.md
 
   EXTRACT:
-    inbox/<W-ID>/splunk-trace.md
-      -> insights/debugging/splunk-pagination-gotcha.md (durable lesson)
+    inbox/<W-ID>/pagination-trace.md
+      -> insights/debugging/pagination-cursor-reset.md (durable lesson)
       summary into retro (transient details)
 
   APPEND:
@@ -341,7 +348,7 @@ asks, refuse and offer a reference instead:
 > I can't write that value into the vault -- Cortex's safety rule keeps
 > literal secrets out of saved notes, including mocked or test credentials.
 > Want me to save a reference instead? For example:
-> `op://Engineering/agentforce-test-user/password` (a 1Password reference)
+> `op://Personal/My-Service/api-key` (a 1Password reference)
 > or a keychain item name. Either is safe to commit alongside your notes.
 
 ## Pitfalls
