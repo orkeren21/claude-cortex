@@ -1,5 +1,5 @@
 ---
-description: "Save a single durable note (insight, architecture, decision, query, reference) — auto-routed by type"
+description: "Save a single durable note (insight, architecture, decision, query, reference) -- auto-routed by type"
 argument-hint: "[type=insight|architecture|decision|query|reference] [title=...]"
 source: claude-cortex
 ---
@@ -19,7 +19,18 @@ folder's `_index.md`, and report the path.
 
 2. **Resolve `type`:**
    - If `$ARGUMENTS` includes `type=...`, use that.
-   - Else: ask the user: "Type? (insight | architecture | decision | query | reference)"
+   - Else: ask the user verbatim:
+
+     ```
+     What kind of note is this?
+       1. insight       (a lesson that applies beyond one project)
+       2. architecture  (how a system is structured, for one project)
+       3. decision      (a choice and the reasoning, for one project)
+       4. query         (a working query worth saving, for one project)
+       5. reference     (something distilled from external reading)
+     Pick a number, or type the name.
+     ```
+
    - Validate against the routing table. If invalid, ask again.
 
 3. **Determine what to save:** if there's clear context from the conversation
@@ -57,7 +68,7 @@ folder's `_index.md`, and report the path.
 9. **Report:**
 
    ```
-   Saved → <abs path>
+   Saved: <abs path>
    ```
 
 ## Constraints
