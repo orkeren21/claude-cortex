@@ -78,14 +78,23 @@ Run these checks. If any fail, bail with a clear message.
        https://brew.sh and bail.
      - On no: bail. The settings.json edit step requires `jq`.
 
-5. **Clone the repo.** All subsequent paths in this installer are relative to
-   a freshly-cloned copy of the repo. Clone it into a temp directory and
-   export `CORTEX_REPO` so every later step can reference files by absolute
-   path.
+5. **Clone the repo (or use a local checkout).** All subsequent paths in this
+   installer are relative to a copy of the repo. Two branches:
+
+   **Detection.** If your current working directory has the marker file
+   `presets/karpathy-lite/preset.yaml`, you're inside the repo already
+   (contributor / smoke-tester case). Take the local-checkout branch.
+   Otherwise take the clone branch.
 
    ```bash
-   CORTEX_REPO="$(mktemp -d)/claude-cortex"
-   git clone --depth 1 https://github.com/orkeren21/claude-cortex "$CORTEX_REPO"
+   if [ -f "$(pwd)/presets/karpathy-lite/preset.yaml" ]; then
+     # Local checkout: use the repo we're already in.
+     CORTEX_REPO="$(pwd)"
+   else
+     # Fresh install: clone to a temp dir.
+     CORTEX_REPO="$(mktemp -d)/claude-cortex"
+     git clone --depth 1 https://github.com/orkeren21/claude-cortex "$CORTEX_REPO"
+   fi
    ```
 
    From here on, paths like `presets/karpathy-lite/...` should be read as
