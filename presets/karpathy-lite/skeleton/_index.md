@@ -1,7 +1,6 @@
 ---
 folder: /
 purpose: Top-level map of your Claude Cortex vault
-last_updated: 2026-05-12
 ---
 
 # Your Claude Cortex vault

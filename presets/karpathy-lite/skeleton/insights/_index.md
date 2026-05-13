@@ -1,7 +1,6 @@
 ---
 folder: insights
 purpose: Durable cross-project lessons
-last_updated: 2026-05-12
 ---
 
 # Insights

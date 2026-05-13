@@ -1,13 +1,12 @@
 ---
 folder: people
 purpose: Collaborators, expertise, 1:1 notes
-last_updated: 2026-05-12
 ---
 
 # People
 
-One file per person. Filename pattern: `<firstname>-<lastname>-<role-slug>.md`.
+One file per person, named however helps you find them later
+(e.g., `jane-smith.md` or `jane-smith-platform-team.md`).
 
 ## Contents
 
-(Empty.)

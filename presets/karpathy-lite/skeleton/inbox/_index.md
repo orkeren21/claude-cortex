@@ -1,7 +1,6 @@
 ---
 folder: inbox
 purpose: Staging area for mid-flight notes. Files here are temporary.
-last_updated: 2026-05-12
 ---
 
 # Inbox

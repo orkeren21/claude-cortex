@@ -153,7 +153,8 @@ When you create a new file in any folder:
    ```
    - [<slug>] -- <one-line description, 50-90 chars>
    ```
-3. Update `last_updated:` in the frontmatter to today's date (UTC).
+3. Set or update `last_updated:` in the frontmatter to today's date (UTC).
+   If the line doesn't exist yet, add it.
 
 ## Retro Synthesis (`/retro <W-ID>`)
 

@@ -1,7 +1,6 @@
 ---
 folder: retros
 purpose: Synthesized retrospectives, organized by project
-last_updated: 2026-05-12
 ---
 
 # Retrospectives
