@@ -118,7 +118,7 @@ Will remove:
   - ~/.claude/hooks/claude-cortex-session-start.sh
   - SessionStart hook entry from ~/.claude/settings.json (only the entry whose command points at our hook)
   - Vault permissions allowlist entries from ~/.claude/settings.json
-    (16 entries scoped to <vault_path>; only the entries Cortex added)
+    (17 entries scoped to <vault_path>; only the entries Cortex added)
   - <vault_path>/.claude-cortex/
 
 Will NOT touch:
@@ -233,6 +233,7 @@ Execute in this order. After each step, report `[ok] <what>`.
    `~/.claude/settings.json`. This is privileged; diff always shown.
 
    ```bash
+   # Stage:
    if [ -f ~/.claude/settings.json ] && [ -n "${VAULT_PATH:-}" ]; then
      glob="${VAULT_PATH}/**"
      tmp="$(mktemp)"

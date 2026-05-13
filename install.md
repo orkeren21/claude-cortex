@@ -308,7 +308,7 @@ This will:
   - Register the hook in ~/.claude/settings.json (only adding our entry --
     your other hooks are untouched).
   - Allow Cortex to read and write inside the vault folder without
-    prompting for every operation. Adds 16 vault-scoped permissions
+    prompting for every operation. Adds 17 vault-scoped permissions
     entries to ~/.claude/settings.json (the same file we add the
     SessionStart hook to). You can remove them any time -- ask Claude
     to edit the file, or run the uninstaller.
@@ -605,7 +605,7 @@ regardless of mode.
 6.5. **Vault permissions allowlist.** This is one of the two privileged
    writes -- diff always shown, regardless of verbose mode.
 
-   The goal: add 16 vault-scoped allowlist entries to
+   The goal: add 17 vault-scoped allowlist entries to
    `~/.claude/settings.json` under `permissions.allow` so Cortex flows
    don't trigger a prompt for every read/write inside the vault.
 
