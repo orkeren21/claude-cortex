@@ -333,9 +333,11 @@ In verbose mode (ON): every step in section 6 shows its diff and asks
 
 In quiet mode (OFF, the default): non-privileged steps (skeleton, vault
 config, skill, slash commands, hook script) print one-line `[ok]`
-summaries and proceed without a per-step gate. The two privileged
-writes (`~/.claude/settings.json` and `~/.claude/CLAUDE.md`) ALWAYS
-show their diff and ask `Proceed? [y/N]`, regardless of verbose mode.
+summaries and proceed without a per-step gate. The three privileged
+writes (the SessionStart hook entry in `~/.claude/settings.json`, the
+permissions allowlist in `~/.claude/settings.json`, and the Cortex
+block in `~/.claude/CLAUDE.md`) ALWAYS show their diff and ask
+`Proceed? [y/N]`, regardless of verbose mode.
 
 ## 6. Apply
 
@@ -355,9 +357,10 @@ This exposes `cortex_render_template`, `cortex_claude_md_has_block`,
 Execute the steps below in order. In quiet mode (the default), each
 non-privileged step (1-5) prints `[ok] <what>` and proceeds. In verbose
 mode, each non-privileged step also shows a diff/preview and asks
-`Continue? [Y/n]` before applying. Steps 6 and 7 (settings.json,
-CLAUDE.md) are privileged and ALWAYS show diff + ask `Proceed? [y/N]`,
-regardless of mode.
+`Continue? [Y/n]` before applying. Steps 6, 6.5, and 7 (settings.json
+hook entry, settings.json permissions allowlist, CLAUDE.md) are
+privileged and ALWAYS show diff + ask `Proceed? [y/N]`, regardless of
+mode.
 
 1. **Skeleton.** Announce, then apply.
 
@@ -602,7 +605,7 @@ regardless of mode.
    registered. Show the diff to the user and wait for explicit confirmation
    before the `mv`.
 
-6.5. **Vault permissions allowlist.** This is one of the two privileged
+6.5. **Vault permissions allowlist.** This is one of the three privileged
    writes -- diff always shown, regardless of verbose mode.
 
    The goal: add 17 vault-scoped allowlist entries to
@@ -611,6 +614,9 @@ regardless of mode.
 
    ```bash
    # Stage:
+   # Strip any trailing slash so the glob is well-formed (path//** would
+   # match nothing).
+   VAULT_PATH="${VAULT_PATH%/}"
    tmp="$(mktemp)"
    jq --arg vault "$VAULT_PATH" '
      ($vault + "/**") as $glob

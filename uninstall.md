@@ -235,6 +235,8 @@ Execute in this order. After each step, report `[ok] <what>`.
    ```bash
    # Stage:
    if [ -f ~/.claude/settings.json ] && [ -n "${VAULT_PATH:-}" ]; then
+     # Strip any trailing slash so the glob matches the install glob.
+     VAULT_PATH="${VAULT_PATH%/}"
      glob="${VAULT_PATH}/**"
      tmp="$(mktemp)"
 
@@ -265,6 +267,10 @@ Execute in this order. After each step, report `[ok] <what>`.
          then del(.permissions.allow)
          else .
          end
+       | if (.permissions // {} | length) == 0
+         then del(.permissions)
+         else .
+         end
      ' ~/.claude/settings.json > "$tmp"
 
      # Show:
@@ -278,8 +284,11 @@ Execute in this order. After each step, report `[ok] <what>`.
    fi
    ```
 
-   The `del(.permissions.allow)` step removes the empty array if Cortex
-   was the only thing populating it -- leaves no orphan key.
+   The two `del` steps remove the empty `.permissions.allow` array (if
+   Cortex was the only thing populating it) and then the now-empty
+   `.permissions` object itself (if it has no other fields). Sibling
+   fields like `.permissions.deny` would survive; we only delete
+   `.permissions` when it is genuinely empty.
 
 6. **Remove the vault internal config dir** (this is metadata about the
    install, NOT vault content):
