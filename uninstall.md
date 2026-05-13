@@ -35,7 +35,17 @@ target before applying.
    ```
 
    - If found: continue.
-   - If not: ask: "`jq` not found. Install via Homebrew? (required to safely edit settings.json)" — on yes, `brew install jq`; on no, bail.
+   - If not: ask the user verbatim:
+
+     ```
+     jq is not installed. The uninstaller needs it to safely edit
+     settings.json. Install it via Homebrew now? [Y/n]
+
+     Without jq, the uninstaller cannot remove the SessionStart hook entry,
+     and the uninstall will stop here.
+     ```
+
+     On yes: run `brew install jq`. On no: bail with `jq required to continue. Install it manually (https://stedolan.github.io/jq/), then re-run the uninstaller.`.
 
 4. **Clone the cortex repo into a temp dir** so the helpers are available:
 
@@ -224,55 +234,13 @@ Execute in this order. After each step, report `[ok] <what>`.
    rm -rf "$VAULT_PATH/.claude-cortex/"
    ```
 
-## 4. Vault content (asked separately)
+## 4. Vault content
 
-Ask:
+Claude Cortex is uninstalled. Your vault at `<vault_path>` is untouched.
 
-```
-Cortex itself has been uninstalled. What about the vault content?
-
-  (a) Keep everything in <vault_path>/ exactly as it is. (default)
-  (b) Remove only the inbox archive at <vault_path>/inbox/.archive/.
-  (c) Remove the entire vault folder at <vault_path>/.
-
-Choose (a/b/c):
-```
-
-- On `a`: do nothing — report `Vault preserved.`.
-- On `b`:
-  ```bash
-  ls -1 "$VAULT_PATH/inbox/.archive/" 2>/dev/null
-  echo "Remove these archived staging folders? [y/N]"
-  # On y:
-  rm -rf "$VAULT_PATH/inbox/.archive/"
-  ```
-- On `c`: this is the only path that touches your notes. Show a clear
-  summary, warn explicitly, and require an exact-match type-back before
-  doing anything.
-
-  ```bash
-  echo "Heads up: this will permanently delete your entire vault, including"
-  echo "every note you've written. There is no undo."
-  echo
-  echo "About to remove:"
-  echo "  $VAULT_PATH"
-  echo "  Files: $(find "$VAULT_PATH" -type f 2>/dev/null | wc -l | tr -d ' ')"
-  echo "  Size:  $(du -sh "$VAULT_PATH" 2>/dev/null | awk '{print $1}')"
-  ```
-
-  Then ask:
-
-  ```
-  If you're sure, type the absolute path back exactly as shown above to
-  confirm. Anything else cancels.
-
-  Path:
-  ```
-
-  Compare strings exactly (`[ "$typed" = "$VAULT_PATH" ]`, case-sensitive,
-  no trailing-slash normalization). Only on exact match:
-  `rm -rf "$VAULT_PATH/"`. On any mismatch: bail with
-  `Path didn't match -- vault preserved.`.
+If you'd like to clean up the staged-archive folder Cortex created at
+`<vault_path>/inbox/.archive/`, you can remove it yourself. Cortex won't
+touch anything inside your vault on uninstall.
 
 ## 5. Done
 
