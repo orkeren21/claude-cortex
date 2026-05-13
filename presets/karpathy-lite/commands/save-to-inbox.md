@@ -1,5 +1,5 @@
 ---
-description: "Stage scratch into inbox/<W-ID>/ — zero-friction capture, no routing decisions until /retro"
+description: "Stage scratch into inbox/<W-ID>/ -- zero-friction capture, no routing decisions until /retro"
 argument-hint: "[W-ID] [title=...]"
 source: claude-cortex
 ---

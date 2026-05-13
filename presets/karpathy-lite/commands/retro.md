@@ -1,5 +1,5 @@
 ---
-description: "Synthesize and dispatch a staged inbox/<W-ID>/ folder — promotes notes to durable destinations and writes a fresh retrospective"
+description: "Synthesize and dispatch a staged inbox/<W-ID>/ folder -- promotes notes to durable destinations and writes a fresh retrospective"
 argument-hint: "[W-ID]"
 source: claude-cortex
 ---
@@ -30,7 +30,7 @@ apply it atomically on approval, and report.
 ## Constraints
 
 - Never delete files. Archive only.
-- The retro is a fresh synthesis — do not just rename or copy a staged file.
+- The retro is a fresh synthesis -- do not just rename or copy a staged file.
 - Save the dispatch plan as `inbox/.archive/<W-ID>/dispatch-plan.md` for
   auditability before doing the moves.
 - Apply the "Credentials Rule" section to every promoted/extracted note.

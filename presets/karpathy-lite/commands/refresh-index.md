@@ -1,5 +1,5 @@
 ---
-description: "Regenerate a folder's _index.md from its actual contents — preserves hand-written prose"
+description: "Regenerate a folder's _index.md from its actual contents -- preserves hand-written prose"
 argument-hint: "<relative-path-from-vault-root>"
 source: claude-cortex
 ---
@@ -29,7 +29,7 @@ preserving hand-written prose sections.
    the frontmatter `title:` and produce one line:
 
    ```
-   - [<basename-without-ext>] — <title or first H1 if no title>
+   - [<basename-without-ext>] -- <title or first H1 if no title>
    ```
 
    Skip `_index.md` itself, skip `.gitkeep`, skip dotfiles.
@@ -44,7 +44,7 @@ preserving hand-written prose sections.
 7. **On approval, write the file. Report:**
 
    ```
-   Refreshed → <folder>/_index.md
+   Refreshed: <folder>/_index.md
    ```
 
 ## Constraints
@@ -53,5 +53,5 @@ preserving hand-written prose sections.
   wants every folder, they can invoke this once per folder or write a wrapper.
 - Don't touch any file other than the target `_index.md`.
 - If the folder has no `_index.md` at all, create one with default frontmatter
-  and prose `## Contents` only — no fabricated `purpose:` or "Read this when"
+  and prose `## Contents` only -- no fabricated `purpose:` or "Read this when"
   sections.

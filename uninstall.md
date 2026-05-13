@@ -26,7 +26,7 @@ target before applying.
    test -d ~/.claude
    ```
 
-   - If absent: print `~/.claude not found — nothing to uninstall.` and stop.
+   - If absent: print `~/.claude not found -- nothing to uninstall.` and stop.
 
 3. **`jq` check.**
 
