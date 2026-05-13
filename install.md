@@ -244,27 +244,12 @@ Store the answer as `<auto_capture_mode>`. Then proceed to section 4.
 
 ## 4. A few small choices
 
-Three separate prompts. Ask each one as its own message, wait for the answer,
+Two separate prompts. Ask each one as its own message, wait for the answer,
 then ask the next. Do NOT batch them. Do NOT ask the user to "answer all of
 the below". Each prompt should explain itself; don't assume the user knows
 the jargon.
 
-**4.1 -- Daily notes folder.** Send this as a single message and stop:
-
-```
-Want a daily/ folder created in the vault for one-note-per-day journaling?
-
-  - Some people keep a daily journal note in Obsidian and use it as a
-    catch-all for the day. If that sounds useful, say yes -- Cortex will
-    create the folder for you.
-  - Most users skip this; the inbox folder already covers mid-flight notes.
-
-[y/N] (default: no)
-```
-
-Default on empty input is `N`. Store as `<daily_notes>`.
-
-**4.2 -- "Stale" reminder threshold.** Only after 4.1 is answered, send this
+**4.1 -- "Stale" reminder threshold.** Send this
 as a single message and stop:
 
 ```
@@ -284,7 +269,7 @@ for the default.
 Default on empty input is `14`. Accept any positive integer. Store as
 `<stale_days>`.
 
-**4.3 -- Auto-update the folder index files.** Only after 4.2 is answered,
+**4.2 -- Auto-update the folder index files.** Only after 4.1 is answered,
 send this as a single message and stop:
 
 ```
@@ -301,7 +286,7 @@ update them manually (or run /refresh-index <folder> later).
 
 Default on empty input is `Y`. Store as `<index_auto_maintenance>`.
 
-After 4.3 is answered, proceed to section 5.
+After 4.2 is answered, proceed to section 5.
 
 ## 5. Plan & confirm
 
@@ -316,15 +301,15 @@ Here's the plan:
   Save behavior:       <auto_capture_mode>  (e.g. balanced, minimal, off)
   Stale reminder:      <stale_days> days
   Auto-update indexes: <index_auto_maintenance>
-  Daily notes folder:  <daily_notes>
 
 This will:
   - Set up the folder skeleton inside <vault_path>/ (skipping any folder
     that already exists, so existing notes are not touched).
   - Save your settings at <vault_path>/.claude-cortex/config.yaml.
   - Install the Cortex skill at ~/.claude/skills/claude-cortex/.
-  - Install 6 slash commands at ~/.claude/commands/ (save-to-inbox,
-    save-insight, retro, resume-work, triage-inbox, refresh-index).
+  - Install 7 slash commands at ~/.claude/commands/ (save-to-inbox,
+    save-insight, retro, resume-work, triage-inbox, refresh-index,
+    cortex).
   - Install a session-start hook at ~/.claude/hooks/.
   - Register the hook in ~/.claude/settings.json (only adding our entry --
     your other hooks are untouched).
@@ -425,7 +410,6 @@ Execute the steps below in order. After each block, report `[ok] <what>`.
    auto_capture_mode: <auto_capture_mode>
    stale_staging_days: <stale_days>
    index_auto_maintenance: <index_auto_maintenance>
-   daily_notes: <daily_notes>
    installed_at: <ISO-8601 UTC now>
    ```
 
@@ -475,13 +459,14 @@ Execute the steps below in order. After each block, report `[ok] <what>`.
    Announce:
 
    ```
-   About to install 6 slash commands at ~/.claude/commands/:
+   About to install 7 slash commands at ~/.claude/commands/:
      - save-to-inbox.md   -- stage a quick note for the active work item
      - save-insight.md    -- save a durable lesson
      - retro.md           -- wrap up a work item and file its notes
      - resume-work.md     -- catch you up on a work item you stepped away from
      - triage-inbox.md    -- handle work items that have gone stale
      - refresh-index.md   -- rebuild a folder's _index.md listing
+     - cortex.md          -- show this menu in case you forget what's available
 
    If you already have a command of the same name, I'll skip that one and
    tell you, so your existing setup is never overwritten.
@@ -654,16 +639,31 @@ Execute the steps below in order. After each block, report `[ok] <what>`.
    ```
    [ok] Claude Cortex v0.1.0 installed.
 
-   Try:
-     - Mention W-XXXXXX in a session -- Cortex sets it as the active work item.
-     - Run /save-to-inbox in a Claude Code session to stage a note.
-     - Run /retro <W-ID> to synthesize and dispatch staged notes.
+   You're set. Cortex will work naturally as you do -- staging notes when
+   it notices something worth keeping, asking before saving anything
+   durable, and reminding you about work items you've stepped away from.
+
+   If you ever want to trigger something explicitly:
+     /save-to-inbox     stage a quick note for the current work item
+     /save-insight      save a durable lesson, decision, or query
+     /retro <W-ID>      wrap up a work item and file its notes
+     /resume-work       get caught up on a paused work item
+     /triage-inbox      handle stale staging folders
+     /refresh-index     rebuild a folder's contents listing
+     /cortex            show this menu again
+
+   Forget what's available? Type /cortex for the menu, or just ask me --
+   "what cortex commands do I have?" works too.
+
+   To get started, just work normally. Mention a work item by ID
+   (W-XXXXXX) and Cortex will pick it up from there.
 
    Vault:    <vault_path>
    Config:   <vault_path>/.claude-cortex/config.yaml
    Rules:    ~/.claude/CLAUDE.md (between cortex delimiters)
 
-   Restart Claude Code or open a new session for the SessionStart hook to fire.
+   Restart Claude Code or open a new session for the SessionStart hook
+   to fire.
    ```
 
 ## 8. Errors

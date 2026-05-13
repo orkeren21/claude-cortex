@@ -7,7 +7,7 @@ purpose: Durable cross-project lessons
 
 Cross-cutting lessons that apply beyond one project. Subfolders are by topic.
 
-## Topics
+## Subfolders
 - [debugging/](debugging/_index.md) -- debugging gotchas and patterns
 - [architecture/](architecture/_index.md) -- architecture decisions/patterns worth remembering
 - [tooling/](tooling/_index.md) -- tool-specific lessons (CI, build systems, editors)

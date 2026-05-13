@@ -6,7 +6,7 @@ install while preserving the user's vault data.
 ## How this uninstaller behaves
 
 Show every action before taking it. Uninstalls feel safer when the user sees
-exactly what's about to disappear. The section 3 confirmation gate authorizes the
+exactly what's about to disappear. The section 2 confirmation gate authorizes the
 removals listed under "Will remove"; each removal still shows its diff or
 target before applying.
 
@@ -114,7 +114,7 @@ Will remove:
   - <!-- claude-cortex:begin v1 --> ... <!-- claude-cortex:end --> block
     from ~/.claude/CLAUDE.md
   - ~/.claude/skills/claude-cortex/
-  - ~/.claude/commands/{save-insight,save-to-inbox,retro,resume-work,triage-inbox,refresh-index}.md
+  - ~/.claude/commands/{save-insight,save-to-inbox,retro,resume-work,triage-inbox,refresh-index,cortex}.md
   - ~/.claude/hooks/claude-cortex-session-start.sh
   - SessionStart hook entry from ~/.claude/settings.json (only the entry whose command points at our hook)
   - <vault_path>/.claude-cortex/

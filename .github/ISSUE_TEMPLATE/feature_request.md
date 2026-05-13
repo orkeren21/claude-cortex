@@ -1,20 +1,16 @@
 ---
 name: Feature request
-about: Suggest an idea for this project
+about: An idea for something Cortex could do.
 title: ''
-labels: ''
+labels: enhancement
 assignees: ''
-
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+**What problem are you trying to solve?**
+One or two sentences.
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+**What would the ideal interaction look like?**
+Describe the flow from your side -- what you'd type, what Cortex would do.
 
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
-
-**Additional context**
-Add any other context or screenshots about the feature request here.
+**Anything Cortex does today that's close?**
+Optional. Helps us see whether this is a tweak or a new flow.
