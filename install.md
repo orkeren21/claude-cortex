@@ -307,6 +307,11 @@ This will:
   - Install a session-start hook at ~/.claude/hooks/.
   - Register the hook in ~/.claude/settings.json (only adding our entry --
     your other hooks are untouched).
+  - Allow Cortex to read and write inside the vault folder without
+    prompting for every operation. Adds 16 vault-scoped permissions
+    entries to ~/.claude/settings.json (the same file we add the
+    SessionStart hook to). You can remove them any time -- ask Claude
+    to edit the file, or run the uninstaller.
   - Append the Cortex block to ~/.claude/CLAUDE.md (between dedicated
     delimiters; the rest of your CLAUDE.md is untouched). If CLAUDE.md
     doesn't exist yet, it will be created.
@@ -596,6 +601,66 @@ regardless of mode.
    idempotent — re-running the installer is a no-op if our hook is already
    registered. Show the diff to the user and wait for explicit confirmation
    before the `mv`.
+
+6.5. **Vault permissions allowlist.** This is one of the two privileged
+   writes -- diff always shown, regardless of verbose mode.
+
+   The goal: add 16 vault-scoped allowlist entries to
+   `~/.claude/settings.json` under `permissions.allow` so Cortex flows
+   don't trigger a prompt for every read/write inside the vault.
+
+   ```bash
+   # Stage:
+   tmp="$(mktemp)"
+   jq --arg vault "$VAULT_PATH" '
+     ($vault + "/**") as $glob
+     | [
+         "Read(" + $glob + ")",
+         "Write(" + $glob + ")",
+         "Edit(" + $glob + ")",
+         "Bash(grep:" + $glob + ")",
+         "Bash(find:" + $glob + ")",
+         "Bash(cat:" + $glob + ")",
+         "Bash(head:" + $glob + ")",
+         "Bash(tail:" + $glob + ")",
+         "Bash(wc:" + $glob + ")",
+         "Bash(ls:" + $glob + ")",
+         "Bash(awk:" + $glob + ")",
+         "Bash(mkdir:" + $glob + ")",
+         "Bash(mv:" + $glob + " " + $glob + ")",
+         "Bash(cp:" + $glob + " " + $glob + ")",
+         "Bash(touch:" + $glob + ")",
+         "Bash(tee:" + $glob + ")",
+         "Bash(sed:" + $glob + ")"
+       ] as $cortex_entries
+     | .permissions.allow = (
+         ((.permissions.allow // []) + $cortex_entries) | unique
+       )
+   ' ~/.claude/settings.json > "$tmp"
+
+   # Show:
+   diff -u ~/.claude/settings.json "$tmp" || true
+
+   # Gate: present the diff above to the user. Privileged write.
+   # Prompt: Proceed? [y/N] (default no)
+   # On y: continue to Apply.
+   # On anything else: rm -f "$tmp" and bail with "Install cancelled."
+
+   # Apply:
+   mv "$tmp" ~/.claude/settings.json
+   ```
+
+   The `unique` filter makes the edit idempotent -- re-running the
+   installer is a no-op if the entries are already present.
+
+   Path B note: this allowlist deliberately omits `rm`, `rmdir`, and
+   `unlink`. Cortex never deletes inside the vault; if a flow ever
+   tries, the prompt fires and the user sees it.
+
+   Known limitation: `Bash(find:<vault>/**)` permits `find <vault>/...
+   -delete`, which mutates. Claude Code's allowlist matchers don't
+   support flag-level granularity. Cortex's flows do not call
+   `find -delete`; this is a documented limitation, not a workaround.
 
 7. **CLAUDE.md block.** Render the template and append it via the helpers.
    The helpers already handle the create-if-missing case, trailing-newline
