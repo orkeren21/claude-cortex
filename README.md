@@ -43,8 +43,8 @@ Open Claude Code and paste:
 
 > Read the uninstall.md from
 > https://raw.githubusercontent.com/orkeren21/claude-cortex/main/uninstall.md
-> and follow it. It will remove the cortex block, skills, commands, hook,
-> and ask separately what to do with my vault content.
+> and follow it. It won't touch anything inside my vault -- only the Cortex
+> side (skill, commands, hook, and the CLAUDE.md block).
 
 Your vault content stays exactly as it is -- Cortex never deletes anything inside it.
 

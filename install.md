@@ -13,7 +13,7 @@ or `git clone` into a tmp dir for an atomic batch copy.)
 Lay down Claude Cortex on the user's machine: vault skeleton, skills, slash
 commands, SessionStart hook, CLAUDE.md block, and persistent config.
 
-## Posture
+## How this installer behaves
 
 **Show every action before taking it.** Install is a privileged operation.
 For every file you'll create/modify, present the path and the diff/content,
@@ -340,8 +340,8 @@ Proceed? [y/N]
 
 Wait for `y`. On anything else, bail with `Install cancelled.`.
 
-This confirmation authorizes the overall install. Per the Posture section, each write
-step in section 6 still shows its diff before applying.
+This confirmation authorizes the overall install. Per the "How this installer behaves"
+section above, each write step in section 6 still shows its diff before applying.
 
 ## 6. Apply
 
