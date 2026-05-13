@@ -25,10 +25,12 @@ Goal: surface stale `inbox/W-*/` folders and let the user act on each.
 4. **For each stale folder, present a brief** (per the "Resume Brief" section, abbreviated)
    and offer:
    ```
-   (a) Retro now — invoke /retro <W-ID>.
-   (b) Resume an originating session and retro there.
-   (c) Defer — touch the folder so it isn't flagged for another sprint.
-   (d) Discard — move to inbox/.archive/<W-ID>/ without synthesis.
+   (a) Retro now -- run /retro <W-ID> here.
+   (b) Resume the original chat -- I'll show you the command to reload that
+       session in Claude Code so you can pick up where you were.
+   (c) Defer -- mark the folder as touched so I stop nagging for another
+       <stale_days> days.
+   (d) Discard -- move to inbox/.archive/<W-ID>/ without writing a retro.
    ```
 
 5. **If `--purge`:** list every `inbox/.archive/<W-ID>/` with mtime > 90d.

@@ -1,32 +1,29 @@
 ---
 folder: /
-purpose: Top-level map of the Claude Cortex vault
+purpose: Top-level map of your Claude Cortex vault
 last_updated: 2026-05-12
 ---
 
-# Vault root
+# Your Claude Cortex vault
 
-This is your second brain. Claude Code reads it freely and writes only via
-explicit capture flows defined in `~/.claude/CLAUDE.md`.
+This is your second brain. Claude Code can read everything here when it
+needs context, and writes back only via the capture flows you set up
+during install (you can adjust those any time).
 
-## Top-level folders
-- [inbox/](inbox/_index.md) — STAGING ONLY. Per-work-item folders that get
-  promoted at retro. Don't put things here you intend to keep.
-- [retros/](retros/_index.md) — synthesized retrospectives produced by
-  `/retro`, organized by project.
-- [insights/](insights/_index.md) — durable cross-project lessons. Debugging
-  gotchas, architecture patterns, tooling tips.
-- [projects/](projects/_index.md) — per-project canonical knowledge.
-  Each project has a `README.md`, `architecture/`, `decisions/`,
-  `queries/`, `org-ids.md`, etc.
-- [people/](people/_index.md) — collaborators, expertise, 1:1 notes.
-- [references/](references/_index.md) — distilled external reading.
+## Folders
 
-## Conventions
-- Every Claude-written note has YAML frontmatter with at least `type:`,
-  `title:`, `created:`, `updated:`, and `source_session:`.
-- Every folder has a `_index.md` listing its contents.
-- Filenames are kebab-case, ~6 words max.
-- Dates in filenames are `YYYY-MM-DD`.
-- Credentials are never literals — only references (`op://...`, keychain
-  item names).
+- [inbox/](inbox/_index.md) -- temporary. Quick notes Claude drops while
+  you're working on something. They get promoted to durable folders when
+  you run `/retro`. Don't put things here you intend to keep long-term.
+- [retros/](retros/_index.md) -- one write-up per work item, organized by
+  project, produced by `/retro`.
+- [insights/](insights/_index.md) -- lessons that apply across projects:
+  debugging gotchas, architecture patterns, tooling tips.
+- [projects/](projects/_index.md) -- one subfolder per project, with
+  architecture notes, decisions, saved queries, etc.
+- [people/](people/_index.md) -- collaborators, expertise, 1:1 notes.
+- [references/](references/_index.md) -- distilled external reading.
+
+Claude maintains the small `_index.md` file in each folder so it can find
+what's relevant fast. Everything else here is yours -- edit, rearrange,
+rename freely.

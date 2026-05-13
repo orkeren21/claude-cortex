@@ -15,7 +15,8 @@ Inspired by [Andrej Karpathy's locally-curated Obsidian-vault practice](https://
 - Forgotten-work nudge: if you stop touching a work item for a while,
   Claude reminds you at the start of your next session so you can wrap it
   up or move on.
-- Session tracking: every staging folder remembers which Claude Code sessions contributed to it, so post-vacation resume is instant.
+- Resume after a break: each work item remembers which past sessions touched
+  it, so when you come back you can recap or rewind in one command.
 - Cleanly delimited additions to `~/.claude/CLAUDE.md` — uninstall removes them without touching anything else.
 
 ## Install (macOS only in v0.1.0)
@@ -24,18 +25,17 @@ Open Claude Code in any directory and paste this prompt:
 
 > Read the install.md from
 > https://raw.githubusercontent.com/orkeren21/claude-cortex/main/install.md
-> and follow it step by step. It will guide me through choosing a vault
-> location, picking an auto-capture mode, and setting up the second-brain
-> system.
+> and follow it step by step. Ask me one question at a time, in plain
+> English, and show me what's about to change before changing anything.
+> It will take 2-3 minutes.
 
 Claude will:
 1. Check Obsidian.app is installed (offer Homebrew install if not).
 2. Find your existing Obsidian vault, or offer to create one.
-3. Ask which auto-capture mode (`aggressive` / `balanced` / `minimal` / `off`).
+3. Ask how proactive Cortex should be about saving notes during work
+   (aggressive / balanced / minimal / off).
 4. Lay down the vault skeleton, skills, commands, hook, and CLAUDE.md block.
 5. Smoke-test the install.
-
-Estimated time: 2-3 minutes.
 
 ## Uninstall
 
@@ -46,13 +46,18 @@ Open Claude Code and paste:
 > and follow it. It will remove the cortex block, skills, commands, hook,
 > and ask separately what to do with my vault content.
 
-Vault content is preserved by default — your notes are yours.
+Your vault content stays exactly as it is -- Cortex never deletes anything inside it.
 
 ## Configuration
 
 Settings live in two places:
-- `~/.claude/CLAUDE.md` — runtime contract loaded into every Claude Code session, between `<!-- claude-cortex:begin v1 -->` delimiters.
-- `<vault>/.claude-cortex/config.yaml` — persistent install metadata (preset, version, vault_path, settings).
+- `~/.claude/CLAUDE.md` -- the rules Cortex follows in every Claude Code
+  session. Cortex's section is bounded by `<!-- claude-cortex:begin v1 -->`
+  / `<!-- claude-cortex:end -->` delimiters; the rest of your CLAUDE.md is
+  untouched.
+- `<vault>/.claude-cortex/config.yaml` -- a record of your install choices
+  (vault path, save behavior, etc.) so the uninstaller and any future
+  upgrade know what you picked.
 
 Edit either file directly to change settings. The CLAUDE.md block is the runtime source of truth; the YAML config is the install record.
 
@@ -62,12 +67,20 @@ The short version:
 - Claude reads the vault freely as ambient context.
 - During work, Claude auto-stages notes into `inbox/<W-ID>/` (announced in one line).
 - At retro time (`/retro <W-ID>`), Claude synthesizes a retro and dispatches staged notes to durable destinations (`projects/`, `insights/`, `decisions/`, etc.).
-- Vault notes carry YAML frontmatter with `type:`, `title:`, `source_session:`, etc. The `type:` field drives all routing.
-- Every folder has a `_index.md` so Claude (and you) can scan the contents without opening every file.
+- Each note Claude writes carries a small YAML header (`type:`, `title:`,
+  `source_session:`, etc.). The `type:` field is what tells Cortex where
+  to file the note when you `/retro`.
+- Each folder has a `_index.md` -- a one-page table of contents Claude
+  reads first so it can find what's relevant without opening every file.
 
 ## Status
 
-**v0.1.0 — early.** The system works end-to-end on macOS, but you're an early user. Bugs and rough edges are expected. Issues and PRs welcome at https://github.com/orkeren21/claude-cortex.
+**v0.1.0 -- early.** The system works end-to-end on macOS, but you're an
+early user. Expect rough edges in the prompts and the occasional bug. Your
+vault is yours -- Claude Cortex never deletes files inside it, and uninstall
+removes only the Cortex side (skill, commands, hook, the CLAUDE.md block)
+and leaves your vault untouched. Issues and PRs welcome at
+https://github.com/orkeren21/claude-cortex.
 
 ## License
 
