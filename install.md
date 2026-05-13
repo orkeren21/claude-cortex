@@ -598,21 +598,19 @@ Execute the steps below in order. After each block, report `[ok] <what>`.
      CORTEX_VERSION="$(cat "$CORTEX_REPO/shared/version.txt")" \
      > "$rendered"
 
-   # Bail if cortex block is already present.
+   # Skip if cortex block is already present (idempotent re-run).
    if cortex_claude_md_has_block ~/.claude/CLAUDE.md; then
-     echo "Cortex block already present in ~/.claude/CLAUDE.md."
-     echo "Use uninstall.md first, then re-run install."
-     exit 1
+     echo "[ok] Cortex block already present in ~/.claude/CLAUDE.md -- skipping append."
+   else
+     # Append the rendered block (handles file-doesn't-exist, trailing newlines,
+     # delimiter wrapping). Show diff before applying.
+     preview="$(mktemp)"
+     cp ~/.claude/CLAUDE.md "$preview" 2>/dev/null || : > "$preview"
+     cortex_claude_md_append_block "$preview" "$rendered"
+     diff -u ~/.claude/CLAUDE.md "$preview" 2>/dev/null || cat "$preview"
+     # Wait for user confirmation, then:
+     mv "$preview" ~/.claude/CLAUDE.md
    fi
-
-   # Append the rendered block (handles file-doesn't-exist, trailing newlines,
-   # delimiter wrapping). Show diff before applying.
-   preview="$(mktemp)"
-   cp ~/.claude/CLAUDE.md "$preview" 2>/dev/null || : > "$preview"
-   cortex_claude_md_append_block "$preview" "$rendered"
-   diff -u ~/.claude/CLAUDE.md "$preview" 2>/dev/null || cat "$preview"
-   # Wait for user confirmation, then:
-   mv "$preview" ~/.claude/CLAUDE.md
    ```
 
    `VAULT_PATH`, `AUTO_CAPTURE_MODE`, `STALE_STAGING_DAYS`, and
@@ -670,8 +668,39 @@ Execute the steps below in order. After each block, report `[ok] <what>`.
 
 ## 8. Errors
 
-- **Anywhere a step fails:** stop; report the failing step; tell the user
-  what state the system is in (which steps succeeded, which didn't).
-- **Do not auto-rollback.** A partial install is recoverable; auto-undo is
-  more dangerous. Tell the user to either fix the issue and re-run, or to
-  manually clean up the listed paths.
+If any check or apply step fails, stop and tell the user what happened in
+plain English. Use this template (printed as plain text, not as a code
+block, so it renders in Claude Code's chat):
+
+    Install stopped at step <N>: <one-line description of failure>.
+
+    What worked so far:
+      - <step, step, ...>
+
+    What didn't:
+      - <failing step + the specific error in one sentence>
+
+    To recover, you can:
+      1. Re-run the install. The early steps (skeleton, config, skill,
+         commands, hook script) skip anything already in place. The
+         settings.json and CLAUDE.md edits also no-op if Cortex is already
+         registered, so a re-run will pick up where it stopped.
+      2. Or manually clean up: <list the exact files/dirs the partial
+         install created, by absolute path>.
+
+    Happy to walk through either path.
+
+Specific common failures to handle gracefully:
+
+- `/Applications/Obsidian.app` not found and user declined Homebrew: tell
+  them where to download Obsidian (https://obsidian.md/download) and
+  offer to resume after they install.
+- `brew` not found: link https://brew.sh and stop. Don't try to install
+  Homebrew implicitly.
+- `~/.claude/settings.json` is invalid JSON: show the parse error and
+  refuse to edit. Ask the user to fix it manually.
+- Vault path doesn't exist and user declined to create it: ask once more
+  for a different path.
+
+Do not auto-rollback. A partial install is recoverable; auto-undo is more
+dangerous.
