@@ -160,54 +160,52 @@ move on to section 2.
 **After the user answers section 1, proceed to section 2. Do not ask any other questions
 until you have a vault path.**
 
-## 2. Pick a folder structure
+## 2. Folder structure
 
-This is the SECOND user prompt. Ask it on its own; wait for the answer; then
-move on to section 3.
+This is the SECOND user prompt. Send the message below as a single
+message and stop. Wait for the user's answer; then move on to section 3.
 
-The "preset" determines how Cortex organizes folders inside the vault: where
-retros live, where notes get filed, what counts as a "project" vs. a topical
-"insight", etc.
+Cortex uses a folder structure inspired by Andrej Karpathy's locally-
+curated Obsidian-vault practice -- folders by kind of artifact, so
+routing decisions are mechanical. PARA and custom layouts are not
+shipped in v0.1.0; if you'd like a different layout, you can rearrange
+folders any time after install -- Cortex won't fight you.
 
-1. Send this as a single message and stop. Use ASCII only (`--`, `[ok]`):
+Send this message verbatim:
 
-   ```
-   How should Cortex organize the folders inside your vault?
+```
+Cortex will lay down the following folder structure inside your vault.
+Folders by kind of artifact -- routing is mechanical and reliable.
 
-   1. Karpathy-lite (recommended)
-      Folders by kind of artifact -- one folder per "thing":
-        retros/      -- write-ups produced by /retro at the end of a work item
-        insights/    -- durable lessons that apply beyond one project
-        projects/    -- per-project notes (one subfolder per project)
-        people/      -- collaborator notes, 1:1s
-        references/  -- distilled external reading
-        inbox/       -- staging area for mid-flight notes (gets consolidated by /retro)
-      Auto-routing is mechanical and reliable. Good default for most engineers.
+  <vault>/
+  |-- inbox/         -- temp staging for mid-flight notes (one folder per W-ID)
+  |   `-- .archive/  -- where retro'd folders go
+  |-- retros/        -- one write-up per work item, by project
+  |-- insights/      -- cross-project lessons
+  |   |-- debugging/
+  |   |-- architecture/
+  |   `-- tooling/
+  |-- projects/      -- one subfolder per project
+  |-- people/        -- collaborator notes, 1:1s
+  `-- references/    -- distilled external reading
+      |-- articles/
+      `-- books/
 
-   2. PARA  (NOT YET AVAILABLE in v0.1.0 -- planned for a future release)
-      Folders by life-area: 1-projects/, 2-areas/, 3-resources/, 4-archive/.
-      Heavier on manual curation; you decide what is a Project vs. an Area
-      vs. a Resource. Not shipped yet.
+  Existing files in your vault are never touched.
 
-   3. Custom folder structure (NOT YET AVAILABLE in v0.1.0 -- planned for a future release)
-      Bring your own taxonomy. Not shipped yet.
+----------------------------------------
+Looks good? [Y/n]
+```
 
-   Pick 1 to continue.
-   ```
+Default on empty input is `Y`. On Y/yes/empty: confirm in one line and
+proceed to section 3:
 
-2. Accept input:
-   - `1` or `karpathy-lite` -> proceed.
-   - `2` / `para` / `3` / `custom` -> reply:
-     `That preset isn't shipped in v0.1.0 yet. The only available choice today is "1" (Karpathy-lite). Pick "1" to continue, or cancel the install.`
-     Then ask again.
-   - Anything else -> restate and ask again.
+```
+[ok] Folder structure: Karpathy-lite.
+```
 
-3. Once the user picks `1`, store `<preset>` as `karpathy-lite`. Confirm in
-   one line and proceed to section 3:
-
-   ```
-   [ok] Folder structure: Karpathy-lite.
-   ```
+On n/no: bail with `Install cancelled.`. Do not offer alternatives;
+there are no alternatives in v0.1.0.
 
 **After the user answers section 2, proceed to section 3.**
 
