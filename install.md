@@ -224,20 +224,20 @@ asks you first before saving.
 ```
 How proactive should Cortex be about saving notes during your work?
 
-  (a) Aggressive -- save every pattern Cortex detects (queries, decisions,
-      gotchas) into the inbox folder. Most notes captured. Heaviest hand.
-  (b) Balanced   -- (recommended) save queries and quick scratch notes
-      automatically, but ask first before saving anything more durable
-      (decisions, lessons learned).
-  (c) Minimal    -- save nothing automatically. Cortex only offers to save
-      a batch at the end of a long session.
-  (d) Off        -- save nothing automatically and do not offer. Notes are
-      saved only when you explicitly use a slash command or ask Cortex to.
+  1. Aggressive -- save every pattern Cortex detects (queries, decisions,
+     gotchas) into the inbox folder. Most notes captured. Heaviest hand.
+  2. Balanced   -- (recommended) save queries and quick scratch notes
+     automatically, but ask first before saving anything more durable
+     (decisions, lessons learned).
+  3. Minimal    -- save nothing automatically. Cortex only offers to save
+     a batch at the end of a long session.
+  4. Off        -- save nothing automatically and do not offer. Notes are
+     saved only when you explicitly use a slash command or ask Cortex to.
 
-Pick one (a/b/c/d).
+Pick one (1/2/3/4).
 ```
 
-Accept `a`, `b`, `c`, `d` or the full word (`aggressive`, `balanced`, `minimal`,
+Accept `1`, `2`, `3`, `4` or the full word (`aggressive`, `balanced`, `minimal`,
 `off`). On any other input, restate the options and ask again.
 
 Store the answer as `<auto_capture_mode>`. Then proceed to section 4.
