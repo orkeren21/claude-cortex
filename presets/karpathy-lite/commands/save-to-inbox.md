@@ -22,16 +22,17 @@ the staging procedure documented in the claude-cortex skill.
    - Else: scan recent conversation for `W-\d{6,}`; if exactly one matches,
      use it.
    - Else: ask the user: "Which work item? (W-XXXXXX, or 'none' for unclassified)"
-   - "none" → use `inbox/_unclassified/` instead of `inbox/<W-ID>/`.
+   - "none" -> use `inbox/_unclassified/` instead of `inbox/<W-ID>/`.
 
 3. **Resolve the title:**
    - If `$ARGUMENTS` includes `title=...` (quoted), use that.
    - Else: derive a kebab-case slug from the most recent meaningful exchange.
    - The slug becomes the filename: `<slug>.md`.
 
-4. **Determine what to stage:** if the user explicitly said "stage this" or
-   similar after a specific message, that message's content is the body.
-   Otherwise, ask: "What should I stage? Paste it here or describe it."
+4. **Determine what to save:** if the user explicitly said "save this" or
+   "stage this" or similar after a specific message, that message's
+   content is the body. Otherwise, ask the user verbatim: "What should I
+   save? Paste it here, or describe what you have in mind."
 
 5. **Resolve the project** per the "Default Project Resolution" section.
 
@@ -40,7 +41,7 @@ the staging procedure documented in the claude-cortex skill.
 7. **Announce the result in one line:**
 
    ```
-   Staged → <vault>/inbox/<W-ID>/<slug>.md
+   Staged: <vault>/inbox/<W-ID>/<slug>.md
    ```
 
 ## Constraints
