@@ -6,7 +6,7 @@ install while preserving the user's vault data.
 ## How this uninstaller behaves
 
 Show every action before taking it. Uninstalls feel safer when the user sees
-exactly what's about to disappear. The section 3 confirmation gate authorizes the
+exactly what's about to disappear. The section 2 confirmation gate authorizes the
 removals listed under "Will remove"; each removal still shows its diff or
 target before applying.
 
