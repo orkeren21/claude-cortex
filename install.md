@@ -244,27 +244,12 @@ Store the answer as `<auto_capture_mode>`. Then proceed to section 4.
 
 ## 4. A few small choices
 
-Three separate prompts. Ask each one as its own message, wait for the answer,
+Two separate prompts. Ask each one as its own message, wait for the answer,
 then ask the next. Do NOT batch them. Do NOT ask the user to "answer all of
 the below". Each prompt should explain itself; don't assume the user knows
 the jargon.
 
-**4.1 -- Daily notes folder.** Send this as a single message and stop:
-
-```
-Want a daily/ folder created in the vault for one-note-per-day journaling?
-
-  - Some people keep a daily journal note in Obsidian and use it as a
-    catch-all for the day. If that sounds useful, say yes -- Cortex will
-    create the folder for you.
-  - Most users skip this; the inbox folder already covers mid-flight notes.
-
-[y/N] (default: no)
-```
-
-Default on empty input is `N`. Store as `<daily_notes>`.
-
-**4.2 -- "Stale" reminder threshold.** Only after 4.1 is answered, send this
+**4.1 -- "Stale" reminder threshold.** Send this
 as a single message and stop:
 
 ```
@@ -284,7 +269,7 @@ for the default.
 Default on empty input is `14`. Accept any positive integer. Store as
 `<stale_days>`.
 
-**4.3 -- Auto-update the folder index files.** Only after 4.2 is answered,
+**4.2 -- Auto-update the folder index files.** Only after 4.1 is answered,
 send this as a single message and stop:
 
 ```
@@ -301,7 +286,7 @@ update them manually (or run /refresh-index <folder> later).
 
 Default on empty input is `Y`. Store as `<index_auto_maintenance>`.
 
-After 4.3 is answered, proceed to section 5.
+After 4.2 is answered, proceed to section 5.
 
 ## 5. Plan & confirm
 
@@ -316,7 +301,6 @@ Here's the plan:
   Save behavior:       <auto_capture_mode>  (e.g. balanced, minimal, off)
   Stale reminder:      <stale_days> days
   Auto-update indexes: <index_auto_maintenance>
-  Daily notes folder:  <daily_notes>
 
 This will:
   - Set up the folder skeleton inside <vault_path>/ (skipping any folder
@@ -425,7 +409,6 @@ Execute the steps below in order. After each block, report `[ok] <what>`.
    auto_capture_mode: <auto_capture_mode>
    stale_staging_days: <stale_days>
    index_auto_maintenance: <index_auto_maintenance>
-   daily_notes: <daily_notes>
    installed_at: <ISO-8601 UTC now>
    ```
 

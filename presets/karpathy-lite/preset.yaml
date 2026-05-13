@@ -12,7 +12,6 @@ defaults:
   auto_capture_mode: balanced
   stale_staging_days: 14
   index_auto_maintenance: true
-  daily_notes: false
 
 # Folders the installer creates in the vault skeleton.
 # `_index.md` is auto-created via the skeleton itself.
