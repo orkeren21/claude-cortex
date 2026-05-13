@@ -248,7 +248,7 @@ Retro plan for W-<ID> -- "<title from sessions.yaml>"
     retros/<project>/_index.md
     inbox/_index.md
 
-Apply this plan? [y]es, [n]o, or [e]dit to change something first.
+Save this? [Y/n] (e to edit)
 ```
 
 If the user picks `edit`, ask which entries to change and re-present.

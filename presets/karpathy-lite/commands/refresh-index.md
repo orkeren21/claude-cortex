@@ -39,7 +39,16 @@ preserving hand-written prose sections.
    - Keep all preserved sections.
    - Replace the `## Contents` section with the fresh listing.
 
-6. **Show the diff** of the proposed new content against the current file.
+6. **Show the diff** of the proposed new content against the current
+   file. Then ask:
+
+   ```
+   Save this? [Y/n]
+   ```
+
+   Wait for the answer. On `y`/`yes`/empty: proceed to step 7. On
+   `n`/`no`: cancel, leave the file untouched, report `Refresh
+   cancelled.` and stop.
 
 7. **On approval, write the file. Report:**
 

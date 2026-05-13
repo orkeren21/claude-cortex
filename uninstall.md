@@ -117,6 +117,8 @@ Will remove:
   - ~/.claude/commands/{save-insight,save-to-inbox,retro,resume-work,triage-inbox,refresh-index,cortex}.md
   - ~/.claude/hooks/claude-cortex-session-start.sh
   - SessionStart hook entry from ~/.claude/settings.json (only the entry whose command points at our hook)
+  - Vault permissions allowlist entries from ~/.claude/settings.json
+    (17 entries scoped to <vault_path>; only the entries Cortex added)
   - <vault_path>/.claude-cortex/
 
 Will NOT touch:
@@ -226,6 +228,67 @@ Execute in this order. After each step, report `[ok] <what>`.
    - Removes only the entry whose command matches our hook path.
    - Removes any now-empty hook group.
    - Leaves all unrelated SessionStart entries intact.
+
+5.5. **Remove the vault permissions allowlist** from
+   `~/.claude/settings.json`. This is privileged; diff always shown.
+
+   ```bash
+   # Stage:
+   if [ -f ~/.claude/settings.json ] && [ -n "${VAULT_PATH:-}" ]; then
+     # Strip any trailing slash so the glob matches the install glob.
+     VAULT_PATH="${VAULT_PATH%/}"
+     glob="${VAULT_PATH}/**"
+     tmp="$(mktemp)"
+
+     jq --arg glob "$glob" '
+       .permissions.allow = (
+         (.permissions.allow // [])
+         | map(select(
+             . != "Read(" + $glob + ")"
+             and . != "Write(" + $glob + ")"
+             and . != "Edit(" + $glob + ")"
+             and . != "Bash(grep:" + $glob + ")"
+             and . != "Bash(find:" + $glob + ")"
+             and . != "Bash(cat:" + $glob + ")"
+             and . != "Bash(head:" + $glob + ")"
+             and . != "Bash(tail:" + $glob + ")"
+             and . != "Bash(wc:" + $glob + ")"
+             and . != "Bash(ls:" + $glob + ")"
+             and . != "Bash(awk:" + $glob + ")"
+             and . != "Bash(mkdir:" + $glob + ")"
+             and . != "Bash(mv:" + $glob + " " + $glob + ")"
+             and . != "Bash(cp:" + $glob + " " + $glob + ")"
+             and . != "Bash(touch:" + $glob + ")"
+             and . != "Bash(tee:" + $glob + ")"
+             and . != "Bash(sed:" + $glob + ")"
+           ))
+       )
+       | if (.permissions.allow | length) == 0
+         then del(.permissions.allow)
+         else .
+         end
+       | if (.permissions // {} | length) == 0
+         then del(.permissions)
+         else .
+         end
+     ' ~/.claude/settings.json > "$tmp"
+
+     # Show:
+     diff -u ~/.claude/settings.json "$tmp" || true
+
+     # Gate: privileged. Prompt: Proceed? [y/N]
+     # On y: mv. On anything else: rm -f "$tmp" and skip.
+
+     # Apply:
+     mv "$tmp" ~/.claude/settings.json
+   fi
+   ```
+
+   The two `del` steps remove the empty `.permissions.allow` array (if
+   Cortex was the only thing populating it) and then the now-empty
+   `.permissions` object itself (if it has no other fields). Sibling
+   fields like `.permissions.deny` would survive; we only delete
+   `.permissions` when it is genuinely empty.
 
 6. **Remove the vault internal config dir** (this is metadata about the
    install, NOT vault content):

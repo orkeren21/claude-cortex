@@ -17,11 +17,7 @@ commands, SessionStart hook, CLAUDE.md block, and persistent config.
 
 **Show every action before taking it.** Install is a privileged operation.
 For every file you'll create/modify, present the path and the diff/content,
-and wait for explicit "apply" before writing.
-
-The single Plan-and-confirm gate in section 5 authorizes the overall install, but
-each individual write step in section 6 still presents its diff before applying so
-the user sees exactly what is changing on disk at each step.
+and wait for explicit confirmation before writing.
 
 **Ask exactly one question per turn.** Do not batch questions across sections.
 Do not present multiple prompts and ask the user to "reply with your picks".
@@ -82,14 +78,23 @@ Run these checks. If any fail, bail with a clear message.
        https://brew.sh and bail.
      - On no: bail. The settings.json edit step requires `jq`.
 
-5. **Clone the repo.** All subsequent paths in this installer are relative to
-   a freshly-cloned copy of the repo. Clone it into a temp directory and
-   export `CORTEX_REPO` so every later step can reference files by absolute
-   path.
+5. **Clone the repo (or use a local checkout).** All subsequent paths in this
+   installer are relative to a copy of the repo. Two branches:
+
+   **Detection.** If your current working directory has the marker file
+   `presets/karpathy-lite/preset.yaml`, you're inside the repo already
+   (contributor / smoke-tester case). Take the local-checkout branch.
+   Otherwise take the clone branch.
 
    ```bash
-   CORTEX_REPO="$(mktemp -d)/claude-cortex"
-   git clone --depth 1 https://github.com/orkeren21/claude-cortex "$CORTEX_REPO"
+   if [ -f "$(pwd)/presets/karpathy-lite/preset.yaml" ]; then
+     # Local checkout: use the repo we're already in.
+     CORTEX_REPO="$(pwd)"
+   else
+     # Fresh install: clone to a temp dir.
+     CORTEX_REPO="$(mktemp -d)/claude-cortex"
+     git clone --depth 1 https://github.com/orkeren21/claude-cortex "$CORTEX_REPO"
+   fi
    ```
 
    From here on, paths like `presets/karpathy-lite/...` should be read as
@@ -160,54 +165,52 @@ move on to section 2.
 **After the user answers section 1, proceed to section 2. Do not ask any other questions
 until you have a vault path.**
 
-## 2. Pick a folder structure
+## 2. Folder structure
 
-This is the SECOND user prompt. Ask it on its own; wait for the answer; then
-move on to section 3.
+This is the SECOND user prompt. Send the message below as a single
+message and stop. Wait for the user's answer; then move on to section 3.
 
-The "preset" determines how Cortex organizes folders inside the vault: where
-retros live, where notes get filed, what counts as a "project" vs. a topical
-"insight", etc.
+Cortex uses a folder structure inspired by Andrej Karpathy's locally-
+curated Obsidian-vault practice -- folders by kind of artifact, so
+routing decisions are mechanical. PARA and custom layouts are not
+shipped in v0.1.0; if you'd like a different layout, you can rearrange
+folders any time after install -- Cortex won't fight you.
 
-1. Send this as a single message and stop. Use ASCII only (`--`, `[ok]`):
+Send this message verbatim:
 
-   ```
-   How should Cortex organize the folders inside your vault?
+```
+Cortex will lay down the following folder structure inside your vault.
+Folders by kind of artifact -- routing is mechanical and reliable.
 
-   1. Karpathy-lite (recommended)
-      Folders by kind of artifact -- one folder per "thing":
-        retros/      -- write-ups produced by /retro at the end of a work item
-        insights/    -- durable lessons that apply beyond one project
-        projects/    -- per-project notes (one subfolder per project)
-        people/      -- collaborator notes, 1:1s
-        references/  -- distilled external reading
-        inbox/       -- staging area for mid-flight notes (gets consolidated by /retro)
-      Auto-routing is mechanical and reliable. Good default for most engineers.
+  <vault>/
+  |-- inbox/         -- temp staging for mid-flight notes (one folder per W-ID)
+  |   `-- .archive/  -- where retro'd folders go
+  |-- retros/        -- one write-up per work item, by project
+  |-- insights/      -- cross-project lessons
+  |   |-- debugging/
+  |   |-- architecture/
+  |   `-- tooling/
+  |-- projects/      -- one subfolder per project
+  |-- people/        -- collaborator notes, 1:1s
+  `-- references/    -- distilled external reading
+      |-- articles/
+      `-- books/
 
-   2. PARA  (NOT YET AVAILABLE in v0.1.0 -- planned for a future release)
-      Folders by life-area: 1-projects/, 2-areas/, 3-resources/, 4-archive/.
-      Heavier on manual curation; you decide what is a Project vs. an Area
-      vs. a Resource. Not shipped yet.
+  Existing files in your vault are never touched.
 
-   3. Custom folder structure (NOT YET AVAILABLE in v0.1.0 -- planned for a future release)
-      Bring your own taxonomy. Not shipped yet.
+----------------------------------------
+Looks good? [Y/n]
+```
 
-   Pick 1 to continue.
-   ```
+Default on empty input is `Y`. On Y/yes/empty: confirm in one line and
+proceed to section 3:
 
-2. Accept input:
-   - `1` or `karpathy-lite` -> proceed.
-   - `2` / `para` / `3` / `custom` -> reply:
-     `That preset isn't shipped in v0.1.0 yet. The only available choice today is "1" (Karpathy-lite). Pick "1" to continue, or cancel the install.`
-     Then ask again.
-   - Anything else -> restate and ask again.
+```
+[ok] Folder structure: Karpathy-lite.
+```
 
-3. Once the user picks `1`, store `<preset>` as `karpathy-lite`. Confirm in
-   one line and proceed to section 3:
-
-   ```
-   [ok] Folder structure: Karpathy-lite.
-   ```
+On n/no: bail with `Install cancelled.`. Do not offer alternatives;
+there are no alternatives in v0.1.0.
 
 **After the user answers section 2, proceed to section 3.**
 
@@ -224,20 +227,20 @@ asks you first before saving.
 ```
 How proactive should Cortex be about saving notes during your work?
 
-  (a) Aggressive -- save every pattern Cortex detects (queries, decisions,
-      gotchas) into the inbox folder. Most notes captured. Heaviest hand.
-  (b) Balanced   -- (recommended) save queries and quick scratch notes
-      automatically, but ask first before saving anything more durable
-      (decisions, lessons learned).
-  (c) Minimal    -- save nothing automatically. Cortex only offers to save
-      a batch at the end of a long session.
-  (d) Off        -- save nothing automatically and do not offer. Notes are
-      saved only when you explicitly use a slash command or ask Cortex to.
+  1. Aggressive -- save every pattern Cortex detects (queries, decisions,
+     gotchas) into the inbox folder. Most notes captured. Heaviest hand.
+  2. Balanced   -- (recommended) save queries and quick scratch notes
+     automatically, but ask first before saving anything more durable
+     (decisions, lessons learned).
+  3. Minimal    -- save nothing automatically. Cortex only offers to save
+     a batch at the end of a long session.
+  4. Off        -- save nothing automatically and do not offer. Notes are
+     saved only when you explicitly use a slash command or ask Cortex to.
 
-Pick one (a/b/c/d).
+Pick one (1/2/3/4).
 ```
 
-Accept `a`, `b`, `c`, `d` or the full word (`aggressive`, `balanced`, `minimal`,
+Accept `1`, `2`, `3`, `4` or the full word (`aggressive`, `balanced`, `minimal`,
 `off`). On any other input, restate the options and ask again.
 
 Store the answer as `<auto_capture_mode>`. Then proceed to section 4.
@@ -313,20 +316,37 @@ This will:
   - Install a session-start hook at ~/.claude/hooks/.
   - Register the hook in ~/.claude/settings.json (only adding our entry --
     your other hooks are untouched).
+  - Allow Cortex to read and write inside the vault folder without
+    prompting for every operation. Adds 17 vault-scoped permissions
+    entries to ~/.claude/settings.json (the same file we add the
+    SessionStart hook to). You can remove them any time -- ask Claude
+    to edit the file, or run the uninstaller.
   - Append the Cortex block to ~/.claude/CLAUDE.md (between dedicated
     delimiters; the rest of your CLAUDE.md is untouched). If CLAUDE.md
     doesn't exist yet, it will be created.
 
-Each individual write in the next step still shows you a diff before
-applying.
-
-Proceed? [y/N]
+----------------------------------------
+Continue? [Y/n]
+See every diff before applying? [y/N]
 ```
 
-Wait for `y`. On anything else, bail with `Install cancelled.`.
+Wait for the answer to `Continue?`. On `n`/`no`, bail with `Install
+cancelled.`. On `y`/`yes`/empty: continue.
 
-This confirmation authorizes the overall install. Per the "How this installer behaves"
-section above, each write step in section 6 still shows its diff before applying.
+Then read the answer to `See every diff before applying?`. On `y`/`yes`,
+set verbose mode ON. On `n`/`no`/empty (the default), set verbose mode
+OFF.
+
+In verbose mode (ON): every step in section 6 shows its diff and asks
+`Continue? [Y/n]` before applying.
+
+In quiet mode (OFF, the default): non-privileged steps (skeleton, vault
+config, skill, slash commands, hook script) print one-line `[ok]`
+summaries and proceed without a per-step gate. The three privileged
+writes (the SessionStart hook entry in `~/.claude/settings.json`, the
+permissions allowlist in `~/.claude/settings.json`, and the Cortex
+block in `~/.claude/CLAUDE.md`) ALWAYS show their diff and ask
+`Proceed? [y/N]`, regardless of verbose mode.
 
 ## 6. Apply
 
@@ -343,9 +363,20 @@ This exposes `cortex_render_template`, `cortex_claude_md_has_block`,
 `cortex_claude_md_append_block`, `cortex_yaml_get`, `cortex_yaml_set`, and
 `cortex_log`.
 
-Execute the steps below in order. After each block, report `[ok] <what>`.
+Execute the steps below in order. In quiet mode (the default), each
+non-privileged step (1-5) prints `[ok] <what>` and proceeds. In verbose
+mode, each non-privileged step also shows a diff/preview and asks
+`Continue? [Y/n]` before applying. Steps 6, 6.5, and 7 (settings.json
+hook entry, settings.json permissions allowlist, CLAUDE.md) are
+privileged and ALWAYS show diff + ask `Proceed? [y/N]`, regardless of
+mode.
 
-1. **Skeleton.** Announce first, then apply, then confirm.
+1. **Skeleton.** Announce, then apply.
+
+   In quiet mode (the default), only the announce block prints; the
+   skeleton is created and a one-line `[ok]` summary follows. In
+   verbose mode, after the announce block, ask `Continue? [Y/n]` and
+   wait for the answer before creating folders.
 
    Announce:
 
@@ -376,13 +407,39 @@ Execute the steps below in order. After each block, report `[ok] <what>`.
    `cp -n` skips any destination that already exists. If something is
    skipped, log it so the user knows to inspect manually.
 
-   After:
+   After: compute the list of pre-existing vault-root files (so the
+   user knows Cortex saw them and chose to leave them alone):
+
+   ```bash
+   preexisting_root_files="$(
+     find "$VAULT_PATH" -maxdepth 1 -type f \
+       ! -name '_index.md' \
+       ! -name '.*' \
+       -exec basename {} \;
+   )"
+   # If empty, render the report as "none". Otherwise comma-separate.
+   if [ -z "$preexisting_root_files" ]; then
+     preexisting_summary="none"
+   else
+     preexisting_summary="$(echo "$preexisting_root_files" | tr '\n' ',' | sed 's/,$//' | sed 's/,/, /g')"
+   fi
+   ```
+
+   Then report:
 
    ```
-   [ok] Skeleton in place. Skipped (already existed): <list, or "none">.
+   [ok] Skeleton in place.
+        Skipped (already existed): <list, or "none">.
+        Pre-existing vault root files (left untouched): <preexisting_summary>.
    ```
 
-2. **Vault config.** Announce first, then apply, then confirm.
+   `find` is BSD-find compatible -- v0.1.0 is macOS-only.
+
+2. **Vault config.** Announce, then apply.
+
+   Quiet mode: announce + write + `[ok]`. Verbose mode: also show the
+   YAML content that's about to be written and ask `Continue? [Y/n]`
+   before writing.
 
    Announce:
 
@@ -419,7 +476,11 @@ Execute the steps below in order. After each block, report `[ok] <what>`.
    [ok] Config written to <vault_path>/.claude-cortex/config.yaml.
    ```
 
-3. **Skill.** Announce first, then apply, then confirm.
+3. **Skill.** Announce, then apply.
+
+   Quiet mode: announce + copy + `[ok]`. Verbose mode: also note the
+   source path and the destination path side-by-side and ask
+   `Continue? [Y/n]` before copying.
 
    Announce:
 
@@ -427,9 +488,14 @@ Execute the steps below in order. After each block, report `[ok] <what>`.
    About to install the Cortex skill at:
      ~/.claude/skills/claude-cortex/claude-cortex.md
 
-   This is the procedural manual I read whenever you run a Cortex slash
-   command or I'm about to write into the vault. If a skill already exists
-   at that path, I'll skip it and tell you so you can inspect manually.
+   What this skill is: the procedural manual I read whenever you run a
+   Cortex slash command or I'm about to write into the vault. About 350
+   lines covering frontmatter schema, routing rules, retro synthesis,
+   session ID lookup, and the credentials-safety rule. Lives at the path
+   above; doesn't run automatically -- I read it on demand.
+
+   If a skill already exists at that path, I'll skip it and tell you so
+   you can inspect manually.
    ```
 
    Then copy non-destructively so a pre-existing user skill of the same
@@ -454,7 +520,11 @@ Execute the steps below in order. After each block, report `[ok] <what>`.
 
    (Or, if the destination already existed: `[ok] Skill already present -- skipped.`)
 
-4. **Slash commands.** Announce first, then apply, then confirm.
+4. **Slash commands.** Announce, then apply.
+
+   Quiet mode: announce + copy loop + `[ok]`. Verbose mode: list the
+   seven destination paths and ask `Continue? [Y/n]` before the loop
+   runs.
 
    Announce:
 
@@ -494,7 +564,10 @@ Execute the steps below in order. After each block, report `[ok] <what>`.
    [ok] Slash commands installed. Skipped: <list, or "none">.
    ```
 
-5. **Hook script.** Announce first, then apply, then confirm.
+5. **Hook script.** Announce, then apply.
+
+   Quiet mode: announce + copy + chmod + `[ok]`. Verbose mode: also
+   show the source path and ask `Continue? [Y/n]` before the copy.
 
    Announce:
 
@@ -539,8 +612,9 @@ Execute the steps below in order. After each block, report `[ok] <what>`.
    test -f ~/.claude/settings.json || echo '{}' > ~/.claude/settings.json
 
    cmd_path="$HOME/.claude/hooks/claude-cortex-session-start.sh"
-   tmp="$(mktemp)"
 
+   # Stage:
+   tmp="$(mktemp)"
    jq --arg cmd "$cmd_path" '
      # Normalize SessionStart to an array.
      .hooks.SessionStart = (
@@ -556,9 +630,15 @@ Execute the steps below in order. After each block, report `[ok] <what>`.
        end
    ' ~/.claude/settings.json > "$tmp"
 
-   # Show diff and confirm BEFORE applying.
+   # Show:
    diff -u ~/.claude/settings.json "$tmp" || true
-   # Wait for user confirmation, then:
+
+   # Gate: present the diff above to the user. Privileged write.
+   # Prompt: Proceed? [y/N] (default no)
+   # On y: continue to Apply.
+   # On anything else: rm -f "$tmp" and bail with "Install cancelled."
+
+   # Apply:
    mv "$tmp" ~/.claude/settings.json
    ```
 
@@ -568,12 +648,88 @@ Execute the steps below in order. After each block, report `[ok] <what>`.
    registered. Show the diff to the user and wait for explicit confirmation
    before the `mv`.
 
+6.5. **Vault permissions allowlist.** This is one of the three privileged
+   writes -- diff always shown, regardless of verbose mode.
+
+   The goal: add 17 vault-scoped allowlist entries to
+   `~/.claude/settings.json` under `permissions.allow` so Cortex flows
+   don't trigger a prompt for every read/write inside the vault.
+
+   ```bash
+   # Stage:
+   # Strip any trailing slash so the glob is well-formed (path//** would
+   # match nothing).
+   VAULT_PATH="${VAULT_PATH%/}"
+   tmp="$(mktemp)"
+   jq --arg vault "$VAULT_PATH" '
+     ($vault + "/**") as $glob
+     | [
+         "Read(" + $glob + ")",
+         "Write(" + $glob + ")",
+         "Edit(" + $glob + ")",
+         "Bash(grep:" + $glob + ")",
+         "Bash(find:" + $glob + ")",
+         "Bash(cat:" + $glob + ")",
+         "Bash(head:" + $glob + ")",
+         "Bash(tail:" + $glob + ")",
+         "Bash(wc:" + $glob + ")",
+         "Bash(ls:" + $glob + ")",
+         "Bash(awk:" + $glob + ")",
+         "Bash(mkdir:" + $glob + ")",
+         "Bash(mv:" + $glob + " " + $glob + ")",
+         "Bash(cp:" + $glob + " " + $glob + ")",
+         "Bash(touch:" + $glob + ")",
+         "Bash(tee:" + $glob + ")",
+         "Bash(sed:" + $glob + ")"
+       ] as $cortex_entries
+     | .permissions.allow = (
+         ((.permissions.allow // []) + $cortex_entries) | unique
+       )
+   ' ~/.claude/settings.json > "$tmp"
+
+   # Show:
+   diff -u ~/.claude/settings.json "$tmp" || true
+
+   # Gate: present the diff above to the user. Privileged write.
+   # Prompt: Proceed? [y/N] (default no)
+   # On y: continue to Apply.
+   # On anything else: rm -f "$tmp" and bail with "Install cancelled."
+
+   # Apply:
+   mv "$tmp" ~/.claude/settings.json
+   ```
+
+   The `unique` filter makes the edit idempotent -- re-running the
+   installer is a no-op if the entries are already present.
+
+   Path B note: this allowlist deliberately omits `rm`, `rmdir`, and
+   `unlink`. Cortex never deletes inside the vault; if a flow ever
+   tries, the prompt fires and the user sees it.
+
+   Known limitation: `Bash(find:<vault>/**)` permits `find <vault>/...
+   -delete`, which mutates. Claude Code's allowlist matchers don't
+   support flag-level granularity. Cortex's flows do not call
+   `find -delete`; this is a documented limitation, not a workaround.
+
 7. **CLAUDE.md block.** Render the template and append it via the helpers.
    The helpers already handle the create-if-missing case, trailing-newline
    normalization, and delimiter wrapping that Task 2 tested.
 
+   Announce:
+
+   ```
+   About to append the Cortex block to ~/.claude/CLAUDE.md.
+
+   What this block is: the runtime contract I follow in every Claude
+   Code session -- read/write rules for the vault, auto-capture
+   heuristics, the trigger table, the frontmatter requirement. About 90
+   lines, wrapped between dedicated delimiters
+   (<!-- claude-cortex:begin v1 --> ... <!-- claude-cortex:end -->) so
+   the rest of your CLAUDE.md is untouched. Diff below.
+   ```
+
    ```bash
-   # Render the CLAUDE.md template into a tmp file.
+   # Stage:
    rendered="$(mktemp)"
    cortex_render_template "$CORTEX_REPO/presets/karpathy-lite/CLAUDE.md.tmpl" \
      VAULT_PATH="$VAULT_PATH" \
@@ -587,13 +743,19 @@ Execute the steps below in order. After each block, report `[ok] <what>`.
    if cortex_claude_md_has_block ~/.claude/CLAUDE.md; then
      echo "[ok] Cortex block already present in ~/.claude/CLAUDE.md -- skipping append."
    else
-     # Append the rendered block (handles file-doesn't-exist, trailing newlines,
-     # delimiter wrapping). Show diff before applying.
      preview="$(mktemp)"
      cp ~/.claude/CLAUDE.md "$preview" 2>/dev/null || : > "$preview"
      cortex_claude_md_append_block "$preview" "$rendered"
+
+     # Show:
      diff -u ~/.claude/CLAUDE.md "$preview" 2>/dev/null || cat "$preview"
-     # Wait for user confirmation, then:
+
+     # Gate: present the diff above. Privileged write.
+     # Prompt: Proceed? [y/N] (default no)
+     # On y: continue to Apply.
+     # On anything else: rm -f "$preview" and bail with "Install cancelled."
+
+     # Apply:
      mv "$preview" ~/.claude/CLAUDE.md
    fi
    ```
