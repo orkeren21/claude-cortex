@@ -66,7 +66,7 @@ folder's `_index.md`, and report the path.
    <full file content with frontmatter>
    ---
 
-   Apply this? [y]es, [n]o, or [e]dit to change something first.
+   Save this? [Y/n] (e to edit)
    ```
 
 8. **On approval, write the file and update parent `_index.md`** per the

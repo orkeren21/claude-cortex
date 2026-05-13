@@ -17,11 +17,7 @@ commands, SessionStart hook, CLAUDE.md block, and persistent config.
 
 **Show every action before taking it.** Install is a privileged operation.
 For every file you'll create/modify, present the path and the diff/content,
-and wait for explicit "apply" before writing.
-
-The single Plan-and-confirm gate in section 5 authorizes the overall install, but
-each individual write step in section 6 still presents its diff before applying so
-the user sees exactly what is changing on disk at each step.
+and wait for explicit confirmation before writing.
 
 **Ask exactly one question per turn.** Do not batch questions across sections.
 Do not present multiple prompts and ask the user to "reply with your picks".
@@ -315,16 +311,26 @@ This will:
     delimiters; the rest of your CLAUDE.md is untouched). If CLAUDE.md
     doesn't exist yet, it will be created.
 
-Each individual write in the next step still shows you a diff before
-applying.
-
-Proceed? [y/N]
+----------------------------------------
+Continue? [Y/n]
+See every diff before applying? [y/N]
 ```
 
-Wait for `y`. On anything else, bail with `Install cancelled.`.
+Wait for the answer to `Continue?`. On `n`/`no`, bail with `Install
+cancelled.`. On `y`/`yes`/empty: continue.
 
-This confirmation authorizes the overall install. Per the "How this installer behaves"
-section above, each write step in section 6 still shows its diff before applying.
+Then read the answer to `See every diff before applying?`. On `y`/`yes`,
+set verbose mode ON. On `n`/`no`/empty (the default), set verbose mode
+OFF.
+
+In verbose mode (ON): every step in section 6 shows its diff and asks
+`Continue? [Y/n]` before applying.
+
+In quiet mode (OFF, the default): non-privileged steps (skeleton, vault
+config, skill, slash commands, hook script) print one-line `[ok]`
+summaries and proceed without a per-step gate. The two privileged
+writes (`~/.claude/settings.json` and `~/.claude/CLAUDE.md`) ALWAYS
+show their diff and ask `Proceed? [y/N]`, regardless of verbose mode.
 
 ## 6. Apply
 
@@ -341,7 +347,12 @@ This exposes `cortex_render_template`, `cortex_claude_md_has_block`,
 `cortex_claude_md_append_block`, `cortex_yaml_get`, `cortex_yaml_set`, and
 `cortex_log`.
 
-Execute the steps below in order. After each block, report `[ok] <what>`.
+Execute the steps below in order. In quiet mode (the default), each
+non-privileged step (1-5) prints `[ok] <what>` and proceeds. In verbose
+mode, each non-privileged step also shows a diff/preview and asks
+`Continue? [Y/n]` before applying. Steps 6 and 7 (settings.json,
+CLAUDE.md) are privileged and ALWAYS show diff + ask `Proceed? [y/N]`,
+regardless of mode.
 
 1. **Skeleton.** Announce first, then apply, then confirm.
 
