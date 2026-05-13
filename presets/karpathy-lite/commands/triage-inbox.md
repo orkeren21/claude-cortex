@@ -43,6 +43,6 @@ Goal: surface stale `inbox/W-*/` folders and let the user act on each.
 
 - "Defer" must actually update `last_touched` in `sessions.yaml` so the
   next scan won't re-flag.
-- "Discard" archives — never deletes the staged files (that's `--purge`'s job
+- "Discard" archives -- never deletes the staged files (that's `--purge`'s job
   much later).
-- `--purge` requires explicit `y` — `--purge --yes` shorthand is not allowed.
+- `--purge` requires explicit `y` -- `--purge --yes` shorthand is not allowed.

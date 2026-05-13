@@ -1,5 +1,5 @@
 ---
-description: "Brief the user on a work item from the inbox — sessions, staged notes, open questions, next actions"
+description: "Brief the user on a work item from the inbox -- sessions, staged notes, open questions, next actions"
 argument-hint: "[W-ID]"
 source: claude-cortex
 ---
@@ -25,7 +25,7 @@ Goal: produce a single brief that reorients the user on a paused work item.
 ## Constraints
 
 - Read frontmatter, not full bodies. Bodies are large; the brief is short.
-- The brief is the only response. Don't auto-act on the suggestions —
+- The brief is the only response. Don't auto-act on the suggestions --
   wait for the user to pick.
 - "Open questions" extracted from notes: scan for headings/bullets matching
   `## Open questions`, `## Questions`, or list items starting with `?`.

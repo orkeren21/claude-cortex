@@ -153,7 +153,8 @@ When you create a new file in any folder:
    ```
    - [<slug>] -- <one-line description, 50-90 chars>
    ```
-3. Update `last_updated:` in the frontmatter to today's date (UTC).
+3. Set or update `last_updated:` in the frontmatter to today's date (UTC).
+   If the line doesn't exist yet, add it.
 
 ## Retro Synthesis (`/retro <W-ID>`)
 
@@ -240,7 +241,7 @@ Retro plan for W-<ID> -- "<title from sessions.yaml>"
     retros/<project>/_index.md
     inbox/_index.md
 
-Apply this plan? [y/edit/n]
+Apply this plan? [y]es, [n]o, or [e]dit to change something first.
 ```
 
 If the user picks `edit`, ask which entries to change and re-present.
@@ -292,10 +293,16 @@ Open questions (extracted from notes' frontmatter and headings):
   - rollback path if cache TTL too short?
 
 Suggested next actions:
-  (a) Continue here with staged notes as context.
-  (b) `claude --resume <id2>` for richer last-session context.
-  (c) Run /retro <W-ID> if work is actually done.
+  (a) Continue working here -- I've got the staged notes loaded as context.
+  (b) Reload an earlier session for fuller history -- in your shell:
+      `claude --resume <id2>`
+  (c) Run /retro <W-ID> -- if you're done with the work and want Cortex
+      to file the staged notes into durable folders.
 ```
+
+Compute "X days ago" against today's date (UTC). If today's date isn't
+available in the session, omit the parenthetical -- a bare "Started:
+2026-04-20" is fine.
 
 ## Stale Detection
 

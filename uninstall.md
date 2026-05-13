@@ -3,7 +3,7 @@
 You are Claude Code, executing the Claude Cortex uninstaller. Reverse the
 install while preserving the user's vault data.
 
-## Posture
+## How this uninstaller behaves
 
 Show every action before taking it. Uninstalls feel safer when the user sees
 exactly what's about to disappear. The section 3 confirmation gate authorizes the
@@ -26,7 +26,7 @@ target before applying.
    test -d ~/.claude
    ```
 
-   - If absent: print `~/.claude not found — nothing to uninstall.` and stop.
+   - If absent: print `~/.claude not found -- nothing to uninstall.` and stop.
 
 3. **`jq` check.**
 

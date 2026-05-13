@@ -1,6 +1,6 @@
 # Claude Cortex
 
-An Obsidian-backed second brain for Claude Code — auto-routed retros, insights, and project notes with a paste-and-run installer.
+An Obsidian-backed second brain for Claude Code -- auto-routed retros, insights, and project notes with a paste-and-run installer.
 
 Inspired by [Andrej Karpathy's locally-curated Obsidian-vault practice](https://x.com/karpathy), with the productization twist of letting Claude Code stage notes mid-flight, synthesize them into well-organized destinations at retro time, and remember which sessions touched what so you can resume after a break.
 
@@ -17,7 +17,7 @@ Inspired by [Andrej Karpathy's locally-curated Obsidian-vault practice](https://
   up or move on.
 - Resume after a break: each work item remembers which past sessions touched
   it, so when you come back you can recap or rewind in one command.
-- Cleanly delimited additions to `~/.claude/CLAUDE.md` — uninstall removes them without touching anything else.
+- Cleanly delimited additions to `~/.claude/CLAUDE.md` -- uninstall removes them without touching anything else.
 
 ## Install (macOS only in v0.1.0)
 
@@ -43,8 +43,8 @@ Open Claude Code and paste:
 
 > Read the uninstall.md from
 > https://raw.githubusercontent.com/orkeren21/claude-cortex/main/uninstall.md
-> and follow it. It will remove the cortex block, skills, commands, hook,
-> and ask separately what to do with my vault content.
+> and follow it. It won't touch anything inside my vault -- only the Cortex
+> side (skill, commands, hook, and the CLAUDE.md block).
 
 Your vault content stays exactly as it is -- Cortex never deletes anything inside it.
 

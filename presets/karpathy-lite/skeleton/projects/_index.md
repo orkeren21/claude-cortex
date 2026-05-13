@@ -1,21 +1,22 @@
 ---
 folder: projects
 purpose: Per-project canonical knowledge
-last_updated: 2026-05-12
 ---
 
 # Projects
 
-One subfolder per project. Each project subfolder typically contains:
+One subfolder per project. Common files (Cortex doesn't enforce these --
+add whatever helps you):
 
-- `README.md` — overview, status, links
-- `architecture/` — architecture notes
-- `decisions/` — ADR-style decisions
-- `queries/<query_kind>/` — saved queries (splunk/, soql/, sql/, argus/, ...)
-- `org-ids.md` — test/scratch/prod-investigation orgs
-- `secrets.md` — REFERENCES to keychain/1Password, never literal values
-- `open-questions.md` — running list
+- `README.md`         -- overview, status, links.
+- `architecture/`     -- how the system is put together.
+- `decisions/`        -- choices and their reasoning (ADR-style: one file
+                         per decision, dated).
+- `queries/`          -- saved queries, organized by language (e.g. `sql/`,
+                         `splunk/`).
+- `secrets.md`        -- REFERENCES to a credential store (1Password,
+                         keychain). Never literal secrets.
+- `open-questions.md` -- a running list of "ask later".
 
 ## Active projects
 
-(Empty — Claude will populate as projects are referenced.)
