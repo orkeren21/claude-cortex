@@ -307,8 +307,9 @@ This will:
     that already exists, so existing notes are not touched).
   - Save your settings at <vault_path>/.claude-cortex/config.yaml.
   - Install the Cortex skill at ~/.claude/skills/claude-cortex/.
-  - Install 6 slash commands at ~/.claude/commands/ (save-to-inbox,
-    save-insight, retro, resume-work, triage-inbox, refresh-index).
+  - Install 7 slash commands at ~/.claude/commands/ (save-to-inbox,
+    save-insight, retro, resume-work, triage-inbox, refresh-index,
+    cortex).
   - Install a session-start hook at ~/.claude/hooks/.
   - Register the hook in ~/.claude/settings.json (only adding our entry --
     your other hooks are untouched).
@@ -458,13 +459,14 @@ Execute the steps below in order. After each block, report `[ok] <what>`.
    Announce:
 
    ```
-   About to install 6 slash commands at ~/.claude/commands/:
+   About to install 7 slash commands at ~/.claude/commands/:
      - save-to-inbox.md   -- stage a quick note for the active work item
      - save-insight.md    -- save a durable lesson
      - retro.md           -- wrap up a work item and file its notes
      - resume-work.md     -- catch you up on a work item you stepped away from
      - triage-inbox.md    -- handle work items that have gone stale
      - refresh-index.md   -- rebuild a folder's _index.md listing
+     - cortex.md          -- show this menu in case you forget what's available
 
    If you already have a command of the same name, I'll skip that one and
    tell you, so your existing setup is never overwritten.
@@ -637,16 +639,31 @@ Execute the steps below in order. After each block, report `[ok] <what>`.
    ```
    [ok] Claude Cortex v0.1.0 installed.
 
-   Try:
-     - Mention W-XXXXXX in a session -- Cortex sets it as the active work item.
-     - Run /save-to-inbox in a Claude Code session to stage a note.
-     - Run /retro <W-ID> to synthesize and dispatch staged notes.
+   You're set. Cortex will work naturally as you do -- staging notes when
+   it notices something worth keeping, asking before saving anything
+   durable, and reminding you about work items you've stepped away from.
+
+   If you ever want to trigger something explicitly:
+     /save-to-inbox     stage a quick note for the current work item
+     /save-insight      save a durable lesson, decision, or query
+     /retro <W-ID>      wrap up a work item and file its notes
+     /resume-work       get caught up on a paused work item
+     /triage-inbox      handle stale staging folders
+     /refresh-index     rebuild a folder's contents listing
+     /cortex            show this menu again
+
+   Forget what's available? Type /cortex for the menu, or just ask me --
+   "what cortex commands do I have?" works too.
+
+   To get started, just work normally. Mention a work item by ID
+   (W-XXXXXX) and Cortex will pick it up from there.
 
    Vault:    <vault_path>
    Config:   <vault_path>/.claude-cortex/config.yaml
    Rules:    ~/.claude/CLAUDE.md (between cortex delimiters)
 
-   Restart Claude Code or open a new session for the SessionStart hook to fire.
+   Restart Claude Code or open a new session for the SessionStart hook
+   to fire.
    ```
 
 ## 8. Errors

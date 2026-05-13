@@ -7,7 +7,7 @@ Inspired by [Andrej Karpathy's locally-curated Obsidian-vault practice](https://
 ## What you get
 
 - A vault folder structure tuned for engineers managing many parallel projects.
-- Six slash commands for explicit capture and review (see [Slash commands](#slash-commands) below).
+- Seven slash commands for explicit capture and review (see [Slash commands](#slash-commands) below).
 - Quick capture: when Claude notices something worth keeping (a query that
   worked, a decision, a gotcha), it drops a quick note in the inbox and
   tells you in one line. You can always say "don't bother" and turn it down
@@ -29,6 +29,7 @@ Inspired by [Andrej Karpathy's locally-curated Obsidian-vault practice](https://
 | `/resume-work`   | Catch you up on a work item you stepped away from.     |
 | `/triage-inbox`  | Handle work items that have gone stale.                |
 | `/refresh-index` | Rebuild a folder's contents listing.                   |
+| `/cortex`        | Show this menu (in case you forget what's available).  |
 
 You don't need to memorize these. Cortex offers them at the right
 moments, and you can also just talk to Claude -- "save this", "retro
