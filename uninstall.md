@@ -45,7 +45,7 @@ target before applying.
      and the uninstall will stop here.
      ```
 
-     On yes: run `brew install jq`. On no: bail with `jq required to continue. Install it manually (https://stedolan.github.io/jq/), then re-run the uninstaller.`.
+     On yes: run `brew install jq`. On no: bail with `jq required to continue. Install it manually (https://jqlang.github.io/jq/), then re-run the uninstaller.`.
 
 4. **Clone the cortex repo into a temp dir** so the helpers are available:
 
