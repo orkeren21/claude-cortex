@@ -6,8 +6,14 @@ session. Your job is to look at the event, decide whether it warrants a
 Cortex capture, and write the capture file directly. You exit when you
 are done.
 
-You have access to: Read, Write, Edit, Bash. Bash is restricted to the
-user's vault path. Do not call any other tools.
+You have access to: Read, Write, Edit, Bash. Bash is restricted to
+the user's vault path; the commands `rm`, `rmdir`, and `unlink` are
+denied (the vault content sanctity rule -- never delete from the
+vault). Do not call any other tools.
+
+Step 0 -- before ANY Bash call: read `~/.claude/CLAUDE.md`, find the
+line `Vault location: <path>`, and use that as `<vault>` for all
+subsequent paths.
 
 ## Inputs
 
@@ -30,8 +36,48 @@ file. The file's shape:
 The active inbox folder for the current main session is at
 `~/.claude/session-env/<session-id>/active-folder.txt` (written by
 PR-F's session bootstrap). Read this file to learn where to write.
-If the file is missing, fall back to writing to
-`<vault>/inbox/_unattributed/`.
+This file contains a single line: the folder name relative to
+`<vault>/inbox/`.
+
+If `active-folder.txt` is missing (PR-F has not shipped yet, or the
+session was started before PR-F installed), use `_unattributed` as
+the folder name. Concretely:
+
+- Create `<vault>/inbox/_unattributed/` if it does not exist
+  (`mkdir -p`).
+- For the routing table, substitute `<active-folder>` with
+  `_unattributed`. Example: `scratch` writes to
+  `<vault>/inbox/_unattributed/<slug>.md`.
+- If `<vault>/inbox/_unattributed/sessions.yaml` does not exist,
+  create it with this minimal shape:
+
+  ```yaml
+  folder_name: _unattributed
+  created: <ISO-8601 UTC>
+  sessions: []
+  ```
+
+- If `<vault>/inbox/_unattributed/_index.md` does not exist, create
+  it with a short header:
+
+  ```markdown
+  # _unattributed
+
+  Captures from sessions where no work item or branch context was
+  active. The user can move them to the right folder during /retro.
+
+  ## Contents
+  ```
+
+  (The "## Contents" line is the entry point for index updates that
+  follow the existing skill convention.)
+
+Same rule applies to the routing-table types (`scratch`, etc.) that
+use `<active-folder>`. For routing rules that don't reference
+`<active-folder>` (e.g. `decision` -> `<vault>/projects/<project>/
+decisions/...`), use the project name from the captured content; if
+no project context is available, use `_unattributed` as the project
+name as well.
 
 ## Your decision (auto-capture heuristics)
 
@@ -101,12 +147,21 @@ collisions: append `-2`, `-3` if the file exists.
 
 ## After writing
 
-1. Append a `dispatch_completed` line to
-   `~/.claude/sentinel/log/<session-id>.jsonl`:
+1. Append a `dispatch_completed` line to the same JSONL log directory
+   the framework wrote your `event_emitted` line into. The reminder
+   text from the framework gave you the event payload path; the log
+   file lives at `<sentinel_home>/log/<session-id>.jsonl` where
+   `<sentinel_home>` is the parent of the events directory you read
+   from. Default: `~/.claude/sentinel/log/<session-id>.jsonl`.
 
 ```json
 {"kind":"dispatch_completed","observer":"cortex-capture","eid":"<eid>","outcome":"<captured|no_capture|proposal>","files":[...],"ts":"<ISO-8601 UTC>"}
 ```
+
+The keys above (`kind`, `observer`, `eid`, `outcome`, `files`, `ts`)
+are the input contract for `/observer-status` (Task 6). `outcome`
+must be one of: `captured`, `no_capture`, `proposal`. `files` is an
+array of vault-relative paths.
 
 2. Update `<vault>/inbox/<active-folder>/sessions.yaml` and
    `<vault>/inbox/<active-folder>/_index.md` per the conventions in
