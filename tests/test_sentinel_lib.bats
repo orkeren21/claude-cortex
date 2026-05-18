@@ -152,3 +152,12 @@ EOF
   grep -qi "frontmatter" "$f"
   grep -q "active inbox folder" "$f"
 }
+
+@test "observer-status slash command file exists with required structure" {
+  local f="$BATS_TEST_DIRNAME/../presets/karpathy-lite/commands/observer-status.md"
+  [ -f "$f" ]
+  head -1 "$f" | grep -q "^---$"
+  grep -q "description:" "$f"
+  grep -q "source: claude-cortex" "$f"
+  grep -q '\.claude/sentinel/log' "$f"
+}
