@@ -149,6 +149,6 @@ EOF
   [ -f "$f" ]
   grep -q "auto-capture heuristics" "$f"
   grep -q "Routing table" "$f"
-  grep -q "frontmatter" "$f"
+  grep -qi "frontmatter" "$f"
   grep -q "active inbox folder" "$f"
 }

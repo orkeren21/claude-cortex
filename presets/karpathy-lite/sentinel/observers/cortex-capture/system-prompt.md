@@ -77,7 +77,7 @@ Behavior per mode:
 
 The vault path is in `~/.claude/CLAUDE.md` under "Vault location".
 
-## Frontmatter (write this frontmatter on every note)
+## Frontmatter (write this on every note)
 
 ```yaml
 ---
