@@ -10,6 +10,15 @@
 
 set -u
 
+# sentinel_valid_observer_id ID
+# Returns 0 if ID matches [A-Za-z0-9_-]+, non-zero otherwise.
+# Observer IDs that fail this check are unsafe to interpolate into
+# the dedup grep regex. The framework rejects such IDs at lookup time
+# rather than escape them.
+sentinel_valid_observer_id() {
+  printf '%s' "$1" | grep -qE '^[A-Za-z0-9_-]+$'
+}
+
 : "${CLAUDE_CORTEX_HOME:=$HOME/.claude}"
 : "${CLAUDE_SENTINEL_HOME:=$CLAUDE_CORTEX_HOME/sentinel}"
 : "${SENTINEL_OBSERVERS_YAML:=$CLAUDE_SENTINEL_HOME/observers.yaml}"
@@ -40,7 +49,11 @@ sentinel_observers_subscribed_to() {
         }
       }
     }
-  ' "$SENTINEL_OBSERVERS_YAML"
+  ' "$SENTINEL_OBSERVERS_YAML" | while IFS= read -r id; do
+    if sentinel_valid_observer_id "$id"; then
+      printf '%s\n' "$id"
+    fi
+  done
 }
 
 # sentinel_observer_yaml_field OBSERVER FIELD
@@ -84,6 +97,8 @@ sentinel_should_dispatch() {
     return 1
   fi
 
+  # Cap is checked before dedup so a duplicate event still increments
+  # cap_reached when cap is full. Dedup is best-effort; cap is structural.
   local hash
   hash="$(cortex_event_hash "$hook" "$tool" "$payload")"
   if [ -f "$log" ] && grep -q "\"observer\":\"$observer\".*\"hash\":\"$hash\"\|\"hash\":\"$hash\".*\"observer\":\"$observer\"" "$log" 2>/dev/null; then
@@ -129,10 +144,10 @@ REMINDER
 
 # sentinel_read_transcript_window SID K
 # Best-effort read of last K turns from Claude Code transcript file.
-# Path is heuristic (~/.claude/projects/<project>/<session-id>.jsonl);
-# if missing or unreadable, prints "[]". This is intentional graceful
-# degradation: the framework should not crash if Claude Code changes
-# its internal transcript layout.
+# Path is heuristic (~/.claude/projects/<project>/<session-id>.jsonl).
+# Trusts session-id uniqueness across projects (uses head -1 on find).
+# Assumes each transcript line is a single-line JSON value (true for
+# Claude Code's JSONL format). Returns "[]" if path missing/unreadable.
 sentinel_read_transcript_window() {
   local sid="$1" k="$2"
   local transcript_path

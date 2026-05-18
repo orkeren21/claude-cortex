@@ -70,3 +70,56 @@ teardown() {
   ! sentinel_should_dispatch 'sid1' 'cortex-capture' 'post_tool_use' 'Write' '{"tool":"Write"}'
   grep -q '"kind":"cap_reached"' "$CLAUDE_SENTINEL_HOME/log/sid1.jsonl"
 }
+
+@test "sentinel_observers_subscribed_to filters out invalid observer IDs" {
+  source "$HELPERS"; source "$LIB"
+  local bad_yaml="$TMPDIR_TEST/observers.yaml"
+  cat > "$bad_yaml" <<EOF
+observers:
+  - id: cortex.capture
+    subscribe: [post_tool_use]
+  - id: cortex-capture
+    subscribe: [post_tool_use]
+EOF
+  SENTINEL_OBSERVERS_YAML="$bad_yaml" sentinel_observers_subscribed_to post_tool_use > "$TMPDIR_TEST/out.txt"
+  ! grep -q 'cortex.capture' "$TMPDIR_TEST/out.txt"
+  grep -q 'cortex-capture' "$TMPDIR_TEST/out.txt"
+}
+
+@test "sentinel_observer_yaml_field reads scalar field for observer" {
+  source "$HELPERS"; source "$LIB"
+  result="$(sentinel_observer_yaml_field cortex-capture per_session_cap)"
+  [ "$result" = "3" ]
+}
+
+@test "sentinel_observer_yaml_field returns empty for missing field" {
+  source "$HELPERS"; source "$LIB"
+  result="$(sentinel_observer_yaml_field cortex-capture nonexistent_field)"
+  [ -z "$result" ]
+}
+
+@test "sentinel_should_dispatch defaults cap to 30 when missing from yaml" {
+  source "$HELPERS"; source "$LIB"
+  local bad_yaml="$TMPDIR_TEST/observers-no-cap.yaml"
+  cat > "$bad_yaml" <<EOF
+observers:
+  - id: cortex-capture
+    subscribe: [post_tool_use]
+EOF
+  # Pre-seed 29 event_emitted lines -> still under default cap of 30
+  for i in $(seq 1 29); do
+    cortex_jsonl_append "$CLAUDE_SENTINEL_HOME/log/sid1.jsonl" \
+      "{\"kind\":\"event_emitted\",\"observer\":\"cortex-capture\",\"eid\":\"e$i\"}"
+  done
+  SENTINEL_OBSERVERS_YAML="$bad_yaml" sentinel_should_dispatch 'sid1' 'cortex-capture' 'post_tool_use' 'Write' 'p'
+  # Now seed one more so we hit 30 -> next call should fail
+  cortex_jsonl_append "$CLAUDE_SENTINEL_HOME/log/sid1.jsonl" \
+    '{"kind":"event_emitted","observer":"cortex-capture","eid":"e30"}'
+  ! SENTINEL_OBSERVERS_YAML="$bad_yaml" sentinel_should_dispatch 'sid1' 'cortex-capture' 'post_tool_use' 'Write' 'p2'
+}
+
+@test "sentinel_read_transcript_window returns [] when transcript missing" {
+  source "$HELPERS"; source "$LIB"
+  HOME="$TMPDIR_TEST" result="$(sentinel_read_transcript_window 'no-such-session' 20)"
+  [ "$result" = "[]" ]
+}
