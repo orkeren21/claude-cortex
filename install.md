@@ -386,10 +386,11 @@ In verbose mode (ON): every step in section 6 shows its diff and asks
 
 In quiet mode (OFF, the default): non-privileged steps (skeleton, vault
 config, skill, slash commands, hook script) print one-line `[ok]`
-summaries and proceed without a per-step gate. The three privileged
+summaries and proceed without a per-step gate. The four privileged
 writes (the SessionStart hook entry in `~/.claude/settings.json`, the
-permissions allowlist in `~/.claude/settings.json`, and the Cortex
-block in `~/.claude/CLAUDE.md`) ALWAYS show their diff and ask
+permissions allowlist in `~/.claude/settings.json`, the Sentinel install
+in `~/.claude/sentinel/` + 5 hook entries in `~/.claude/settings.json`,
+and the Cortex block in `~/.claude/CLAUDE.md`) ALWAYS show their diff and ask
 `Proceed? [y/N]`, regardless of verbose mode.
 
 ## 6. Apply
@@ -692,7 +693,7 @@ diff + ask `Proceed? [y/N]`, regardless of mode.
    registered. Show the diff to the user and wait for explicit confirmation
    before the `mv`.
 
-6.5. **Vault permissions allowlist.** This is one of the three privileged
+6.5. **Vault permissions allowlist.** This is one of the four privileged
    writes -- diff always shown, regardless of verbose mode.
 
    The goal: add 17 vault-scoped allowlist entries to
