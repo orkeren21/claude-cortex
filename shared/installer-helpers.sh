@@ -122,3 +122,35 @@ cortex_render_template() {
 cortex_log() {
   printf '[cortex] %s\n' "$*" >&2
 }
+
+# cortex_jsonl_append FILE JSON_LINE
+# Appends a single JSON line to FILE. Creates parent dir + file if missing.
+# Always ends with a newline. Atomic per-line on POSIX append semantics.
+cortex_jsonl_append() {
+  local file="$1" line="$2"
+  local dir
+  dir="$(dirname "$file")"
+  [ -d "$dir" ] || mkdir -p "$dir" 2>/dev/null
+  printf '%s\n' "$line" >> "$file"
+}
+
+# cortex_jsonl_count FILE KIND OBSERVER
+# Counts lines whose JSON contains both "kind":"<KIND>" and
+# "observer":"<OBSERVER>". Substring match; sufficient for fixed-shape
+# events the framework writes.
+cortex_jsonl_count() {
+  local file="$1" kind="$2" observer="$3"
+  [ -f "$file" ] || { printf '0'; return 0; }
+  local n
+  n="$(grep -c "\"kind\":\"$kind\".*\"observer\":\"$observer\"" "$file" 2>/dev/null)"
+  printf '%s' "${n:-0}"
+}
+
+# cortex_event_hash KIND TOOL_NAME PAYLOAD_TEXT
+# Returns a short stable hex hash for dedup. Uses shasum (built into macOS).
+# Inputs are joined with '|' for cheapness; collisions across "a|b","c"
+# vs "a","b|c" are possible but harmless at our hash width (64 bits)
+# and per-session cap.
+cortex_event_hash() {
+  printf '%s|%s|%s' "$1" "$2" "$3" | shasum -a 256 | cut -c1-16
+}

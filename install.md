@@ -358,10 +358,13 @@ This will:
   - Register the hook in ~/.claude/settings.json (only adding our entry --
     your other hooks are untouched).
   - Allow Cortex to read and write inside the vault folder without
-    prompting for every operation. Adds 17 vault-scoped permissions
-    entries to ~/.claude/settings.json (the same file we add the
-    SessionStart hook to). You can remove them any time -- ask Claude
-    to edit the file, or run the uninstaller.
+    prompting for every operation. Adds 19 entries (17 vault-scoped
+    + 2 Sentinel log/events) to ~/.claude/settings.json (the same
+    file we add the SessionStart hook to). You can remove them any
+    time -- ask Claude to edit the file, or run the uninstaller.
+  - Install Sentinel framework + Cortex observer at
+    ~/.claude/sentinel/ and register 5 hooks in
+    ~/.claude/settings.json.
   - Append the Cortex block to ~/.claude/CLAUDE.md (between dedicated
     delimiters; the rest of your CLAUDE.md is untouched). If CLAUDE.md
     doesn't exist yet, it will be created.
@@ -383,10 +386,11 @@ In verbose mode (ON): every step in section 6 shows its diff and asks
 
 In quiet mode (OFF, the default): non-privileged steps (skeleton, vault
 config, skill, slash commands, hook script) print one-line `[ok]`
-summaries and proceed without a per-step gate. The three privileged
+summaries and proceed without a per-step gate. The four privileged
 writes (the SessionStart hook entry in `~/.claude/settings.json`, the
-permissions allowlist in `~/.claude/settings.json`, and the Cortex
-block in `~/.claude/CLAUDE.md`) ALWAYS show their diff and ask
+permissions allowlist in `~/.claude/settings.json`, the Sentinel install
+in `~/.claude/sentinel/` + 5 hook entries in `~/.claude/settings.json`,
+and the Cortex block in `~/.claude/CLAUDE.md`) ALWAYS show their diff and ask
 `Proceed? [y/N]`, regardless of verbose mode.
 
 ## 6. Apply
@@ -407,10 +411,10 @@ This exposes `cortex_render_template`, `cortex_claude_md_has_block`,
 Execute the steps below in order. In quiet mode (the default), each
 non-privileged step (1-5) prints `[ok] <what>` and proceeds. In verbose
 mode, each non-privileged step also shows a diff/preview and asks
-`Continue? [Y/n]` before applying. Steps 6, 6.5, and 7 (settings.json
-hook entry, settings.json permissions allowlist, CLAUDE.md) are
-privileged and ALWAYS show diff + ask `Proceed? [y/N]`, regardless of
-mode.
+`Continue? [Y/n]` before applying. Steps 6, 6.5, 6.6, and 7
+(settings.json hook entry, settings.json permissions allowlist, Sentinel
+framework + Cortex observer, CLAUDE.md) are privileged and ALWAYS show
+diff + ask `Proceed? [y/N]`, regardless of mode.
 
 1. **Skeleton.** Announce, then apply.
 
@@ -689,12 +693,13 @@ mode.
    registered. Show the diff to the user and wait for explicit confirmation
    before the `mv`.
 
-6.5. **Vault permissions allowlist.** This is one of the three privileged
+6.5. **Vault permissions allowlist.** This is one of the four privileged
    writes -- diff always shown, regardless of verbose mode.
 
-   The goal: add 17 vault-scoped allowlist entries to
-   `~/.claude/settings.json` under `permissions.allow` so Cortex flows
-   don't trigger a prompt for every read/write inside the vault.
+   The goal: add 19 entries (17 vault-scoped + 2 Sentinel log/events)
+   to `~/.claude/settings.json` under `permissions.allow` so Cortex
+   flows don't trigger a prompt for every read/write inside the vault
+   or Sentinel directories.
 
    ```bash
    # Stage:
@@ -721,7 +726,9 @@ mode.
          "Bash(cp:" + $glob + " " + $glob + ")",
          "Bash(touch:" + $glob + ")",
          "Bash(tee:" + $glob + ")",
-         "Bash(sed:" + $glob + ")"
+         "Bash(sed:" + $glob + ")",
+         "Read(~/.claude/sentinel/log/**)",
+         "Read(~/.claude/sentinel/events/**)"
        ] as $cortex_entries
      | .permissions.allow = (
          ((.permissions.allow // []) + $cortex_entries) | unique
@@ -751,6 +758,127 @@ mode.
    -delete`, which mutates. Claude Code's allowlist matchers don't
    support flag-level granularity. Cortex's flows do not call
    `find -delete`; this is a documented limitation, not a workaround.
+
+6.6. **Sentinel framework + Cortex observer.** Privileged write -- diff
+   always shown for the settings.json sub-step regardless of verbose mode.
+
+   The goal: install the Sentinel auto-capture framework so the Cortex
+   observer subagent can fire on every relevant Claude Code hook event.
+   Replaces the in-CLAUDE.md auto-capture heuristics. Two sub-stages:
+   (A) lay down framework files; (B) register 5 hook entries in
+   ~/.claude/settings.json.
+
+   Announce:
+
+   ```
+   About to install Sentinel framework + Cortex observer at:
+     ~/.claude/sentinel/
+
+   This is the new auto-capture engine. Hooks fire on every relevant
+   Claude Code event; the framework dispatches the Cortex observer
+   subagent in the background to decide what (if anything) to capture
+   to your vault. The observer's system prompt lives at:
+     ~/.claude/sentinel/observers/cortex-capture/system-prompt.md
+   Per-session JSONL logs live at:
+     ~/.claude/sentinel/log/<session-id>.jsonl
+
+   Inspect any session's activity with /observer-status.
+   ```
+
+   **6.6.A Copy framework files.**
+
+   ```bash
+   mkdir -p ~/.claude/sentinel/hooks
+   mkdir -p ~/.claude/sentinel/observers/cortex-capture
+   mkdir -p ~/.claude/sentinel/events
+   mkdir -p ~/.claude/sentinel/log
+
+   # Library + hooks. _lib.sh stays non-executable (sourced, not run).
+   cp "$CORTEX_REPO/presets/karpathy-lite/sentinel/hooks/_lib.sh" \
+     ~/.claude/sentinel/hooks/_lib.sh
+   for h in session-start user-prompt-submit post-tool-use stop session-end; do
+     cp "$CORTEX_REPO/presets/karpathy-lite/sentinel/hooks/$h.sh" \
+       ~/.claude/sentinel/hooks/$h.sh
+     chmod +x ~/.claude/sentinel/hooks/$h.sh
+   done
+
+   # Observer prompt + metadata.
+   cp "$CORTEX_REPO/presets/karpathy-lite/sentinel/observers/cortex-capture/system-prompt.md" \
+     ~/.claude/sentinel/observers/cortex-capture/system-prompt.md
+   cp "$CORTEX_REPO/presets/karpathy-lite/sentinel/observers/cortex-capture/observer.yaml" \
+     ~/.claude/sentinel/observers/cortex-capture/observer.yaml
+
+   # Render observers.yaml.example with vault path substituted.
+   cortex_render_template \
+     "$CORTEX_REPO/presets/karpathy-lite/sentinel/observers.yaml.example" \
+     VAULT_PATH="$VAULT_PATH" \
+     > ~/.claude/sentinel/observers.yaml
+
+   # Copy config.yaml.example as-is.
+   cp "$CORTEX_REPO/presets/karpathy-lite/sentinel/config.yaml.example" \
+     ~/.claude/sentinel/config.yaml
+   ```
+
+   In quiet mode: announce + `[ok] Sentinel files laid down.` In verbose
+   mode: also show a `find ~/.claude/sentinel -type f` listing and ask
+   `Continue? [Y/n]` before proceeding to 6.6.B.
+
+   **6.6.B Register 5 hooks in settings.json.** Privileged write -- diff
+   ALWAYS shown.
+
+   ```bash
+   SETTINGS=~/.claude/settings.json
+   test -f "$SETTINGS" || echo '{}' > "$SETTINGS"
+
+   # Stage:
+   tmp="$(mktemp)"
+   jq '
+     reduce ([
+       {"event": "SessionStart", "script": "session-start.sh"},
+       {"event": "UserPromptSubmit", "script": "user-prompt-submit.sh"},
+       {"event": "PostToolUse", "script": "post-tool-use.sh"},
+       {"event": "Stop", "script": "stop.sh"},
+       {"event": "SessionEnd", "script": "session-end.sh"}
+     ] | .[]) as $h (.;
+       .hooks //= {}
+       | .hooks[$h.event] = (
+           if (.hooks[$h.event] // [] | type) == "array"
+           then .hooks[$h.event]
+           else [.hooks[$h.event]]
+           end
+         )
+       | .hooks[$h.event] = (
+           ($ENV.HOME + "/.claude/sentinel/hooks/" + $h.script) as $cmd
+           | if any(.hooks[$h.event][]?.hooks[]?; .command == $cmd)
+             then .hooks[$h.event]
+             else .hooks[$h.event] + [{"hooks":[{"type":"command","command":$cmd}]}]
+             end
+         )
+     )
+   ' "$SETTINGS" > "$tmp"
+
+   # Show:
+   diff -u "$SETTINGS" "$tmp" || true
+
+   # Gate: present the diff above to the user. Privileged write.
+   # Prompt: Proceed? [y/N] (default no)
+   # On y: continue to Apply.
+   # On anything else: rm -f "$tmp" and bail with "Install cancelled."
+
+   # Apply:
+   mv "$tmp" "$SETTINGS"
+   ```
+
+   The hook entries are appended to each event's array; the
+   `any(...; .command == $cmd)` predicate makes the edit idempotent --
+   re-running the installer is a no-op if the entries are already
+   registered.
+
+   After:
+
+   ```
+   [ok] Sentinel installed (5 hooks registered).
+   ```
 
 7. **CLAUDE.md block.** Render the template and append it via the helpers.
    The helpers already handle the create-if-missing case, trailing-newline

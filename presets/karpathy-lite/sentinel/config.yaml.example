@@ -1,0 +1,16 @@
+# presets/karpathy-lite/sentinel/config.yaml.example
+# Sentinel top-level config. Installed to ~/.claude/sentinel/config.yaml.
+
+# Dispatch mode determines how Sentinel runs an observer when an event fires.
+# - 'subagent' (default): the main Claude Code session dispatches the observer
+#   via the in-session Agent tool with run_in_background: true. Subsidized
+#   under the Claude Code subscription.
+# - 'side_agent': hooks invoke a TypeScript Agent SDK package out-of-band.
+#   Stub in this PR; install PR-I to enable.
+dispatch_mode: subagent
+
+side_agent:
+  use_explicit_api_key: false
+  api_key_env: ANTHROPIC_API_KEY
+  base_url_env: ANTHROPIC_BASE_URL
+  auth_token_env: ANTHROPIC_AUTH_TOKEN

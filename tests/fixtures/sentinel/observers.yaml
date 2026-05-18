@@ -1,0 +1,8 @@
+observers:
+  - id: cortex-capture
+    subscribe: [user_prompt_submit, post_tool_use, stop]
+    system_prompt_path: /tmp/test-system-prompt.md
+    transcript_window: 20
+    per_session_cap: 3
+    dedup_window_seconds: 60
+    model: claude-haiku-4-5

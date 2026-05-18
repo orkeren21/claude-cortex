@@ -197,3 +197,80 @@ EOF
   # Result must contain the prelude.
   grep -q '# Prelude' "$TMPDIR_TEST/CLAUDE.md"
 }
+
+@test "cortex_jsonl_append writes one line of valid JSON" {
+  source "$HELPERS"
+  local f="$TMPDIR_TEST/log.jsonl"
+  cortex_jsonl_append "$f" '{"kind":"event_emitted","eid":"e1"}'
+  cortex_jsonl_append "$f" '{"kind":"dispatch_completed","eid":"e1"}'
+  [ "$(wc -l < "$f")" -eq 2 ]
+  grep -q '"event_emitted"' "$f"
+  grep -q '"dispatch_completed"' "$f"
+}
+
+@test "cortex_jsonl_count counts lines matching a kind" {
+  source "$HELPERS"
+  local f="$TMPDIR_TEST/log.jsonl"
+  cortex_jsonl_append "$f" '{"kind":"event_emitted","eid":"e1","observer":"cortex-capture"}'
+  cortex_jsonl_append "$f" '{"kind":"event_emitted","eid":"e2","observer":"cortex-capture"}'
+  cortex_jsonl_append "$f" '{"kind":"event_emitted","eid":"e3","observer":"other"}'
+  result="$(cortex_jsonl_count "$f" event_emitted cortex-capture)"
+  [ "$result" -eq 2 ]
+}
+
+@test "cortex_jsonl_count returns 0 on missing file" {
+  source "$HELPERS"
+  result="$(cortex_jsonl_count "$TMPDIR_TEST/missing.jsonl" event_emitted cortex-capture)"
+  [ "$result" -eq 0 ]
+}
+
+@test "cortex_jsonl_count returns clean '0' on existing file with no matches" {
+  source "$HELPERS"
+  local f="$TMPDIR_TEST/log.jsonl"
+  cortex_jsonl_append "$f" '{"kind":"other","observer":"other"}'
+  result="$(cortex_jsonl_count "$f" event_emitted cortex-capture)"
+  [ "$result" = "0" ]            # exact byte-equality
+  [ "$result" -eq 0 ]            # integer-comparison (caller's path)
+}
+
+@test "cortex_event_hash is deterministic for same input" {
+  source "$HELPERS"
+  h1="$(cortex_event_hash 'post_tool_use' 'Write' 'foo bar')"
+  h2="$(cortex_event_hash 'post_tool_use' 'Write' 'foo bar')"
+  [ "$h1" = "$h2" ]
+  [ -n "$h1" ]
+}
+
+@test "cortex_event_hash differs for different input" {
+  source "$HELPERS"
+  h1="$(cortex_event_hash 'post_tool_use' 'Write' 'foo')"
+  h2="$(cortex_event_hash 'post_tool_use' 'Write' 'bar')"
+  [ "$h1" != "$h2" ]
+}
+
+@test "CLAUDE.md.tmpl drops auto-capture heuristics table" {
+  local f="$BATS_TEST_DIRNAME/../presets/karpathy-lite/CLAUDE.md.tmpl"
+  [ -f "$f" ]
+  ! grep -q "## Auto-capture heuristics" "$f"
+  ! grep -q "Trigger phrases" "$f"
+}
+
+@test "CLAUDE.md.tmpl keeps vault contract + slash commands" {
+  local f="$BATS_TEST_DIRNAME/../presets/karpathy-lite/CLAUDE.md.tmpl"
+  grep -q "Vault location" "$f"
+  grep -q "Read/write contract" "$f"
+  grep -q "/save-to-inbox" "$f"
+}
+
+@test "CLAUDE.md.tmpl adds a Sentinel section" {
+  local f="$BATS_TEST_DIRNAME/../presets/karpathy-lite/CLAUDE.md.tmpl"
+  grep -q "## Sentinel" "$f"
+  grep -q "/observer-status" "$f"
+  grep -q '\.claude/sentinel/log' "$f"
+}
+
+@test "CLAUDE.md.tmpl keeps auto_capture_mode field" {
+  local f="$BATS_TEST_DIRNAME/../presets/karpathy-lite/CLAUDE.md.tmpl"
+  grep -q "Auto-capture mode:" "$f"
+  grep -q "{{AUTO_CAPTURE_MODE}}" "$f"
+}
