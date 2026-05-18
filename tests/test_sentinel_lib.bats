@@ -133,6 +133,7 @@ EOF
   grep -q "transcript_window:" "$f"
   grep -q "per_session_cap:" "$f"
   grep -q "model: claude-haiku-4-5" "$f"
+  grep -q "{{VAULT_PATH}}" "$f"
 }
 
 @test "config.yaml.example documents both dispatch modes" {

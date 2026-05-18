@@ -24,7 +24,7 @@ observers:
         path_globs:
           - "{{VAULT_PATH}}/**"
         denied_commands: [rm, rmdir, unlink]
-    transcript_window: 20
+    transcript_window: 20         # reserved; hooks currently hardcode 20
     per_session_cap: 30
-    dedup_window_seconds: 60
+    dedup_window_seconds: 60      # reserved; current dedup is session-scoped, not time-windowed
     model: claude-haiku-4-5
