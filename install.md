@@ -34,7 +34,21 @@ ASCII renders consistently across every terminal.
 
 Run these checks. If any fail, bail with a clear message.
 
-1. **OS check.**
+**Preflight invariants.** Sections 0.1 through 0.4 are filesystem
+checks, not conversation. Run each bash command literally; do not
+rephrase any check as a question to the user. The user's answers
+about whether they have these things installed are not consulted --
+only the commands' exit codes matter.
+
+The only user input section 0 takes:
+  - Step 2 (Obsidian missing): yes/no on `brew install --cask obsidian`
+  - Step 4 (jq missing):       yes/no on `brew install jq`
+
+Nothing else in section 0 is conversational.
+
+1. **OS check (run; do not ask).**
+
+   Run this command. Do NOT ask the user what OS they're on.
 
    ```bash
    uname -s
@@ -43,37 +57,64 @@ Run these checks. If any fail, bail with a clear message.
    - If `Darwin`: continue.
    - If anything else: print `Claude Cortex v0.1.0 supports macOS only. Aborting.` and stop.
 
-2. **Obsidian check.**
+2. **Obsidian check (run; do not ask).**
+
+   Run this command. Do NOT ask the user whether Obsidian is installed
+   -- check the filesystem. Try the standard path first, then the
+   per-user and Setapp variants.
 
    ```bash
-   test -d /Applications/Obsidian.app
+   obsidian_path=""
+   for candidate in \
+     /Applications/Obsidian.app \
+     "$HOME/Applications/Obsidian.app" \
+     /Applications/Setapp/Obsidian.app
+   do
+     if [ -d "$candidate" ]; then
+       obsidian_path="$candidate"
+       break
+     fi
+   done
    ```
 
-   - If found: continue.
-   - If not: ask the user: "Obsidian.app not found. Install it via Homebrew?"
+   - If `obsidian_path` is non-empty: continue. Note the path silently;
+     no need to surface it.
+   - If empty: tell the user "Obsidian.app not found at any standard
+     location (/Applications/, ~/Applications/, or /Applications/Setapp/).
+     Install it via Homebrew?"
      - On yes: run `brew install --cask obsidian`. If `brew` is missing,
        point them at https://brew.sh and bail.
      - On no: bail. Cortex requires Obsidian.
 
-3. **Claude Code config dir check.**
+   The user's verbal answer about whether they have Obsidian is
+   irrelevant; the command's result is the truth.
+
+3. **Claude Code config dir check (run; do not ask).**
+
+   Run this command. Do NOT ask the user whether they have Claude Code
+   set up -- check the filesystem.
 
    ```bash
    test -d ~/.claude
    ```
 
    - If yes: continue.
-   - If no: print `~/.claude not found -- install Claude Code first.` and bail.
+   - If no: print `~/.claude not found -- install Claude Code first
+     (https://docs.anthropic.com/claude-code).` and bail.
 
-4. **`jq` check.** macOS does not ship `jq`, and section 6 needs it for safe
-   `settings.json` edits.
+4. **`jq` check (run; do not ask).** macOS does not ship `jq`, and
+   section 6 needs it for safe `settings.json` edits.
+
+   Run this command. Do NOT ask the user whether they have `jq`
+   installed -- check the PATH.
 
    ```bash
    command -v jq >/dev/null
    ```
 
    - If found: continue.
-   - If not: ask: "`jq` not found. Install via Homebrew? (required for safe
-     settings.json edits)"
+   - If not: ask: "`jq` not found. Install via Homebrew? (required for
+     safe settings.json edits)"
      - On yes: run `brew install jq`. If `brew` is missing, point them at
        https://brew.sh and bail.
      - On no: bail. The settings.json edit step requires `jq`.
