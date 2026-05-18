@@ -358,10 +358,10 @@ This will:
   - Register the hook in ~/.claude/settings.json (only adding our entry --
     your other hooks are untouched).
   - Allow Cortex to read and write inside the vault folder without
-    prompting for every operation. Adds 17 vault-scoped permissions
-    entries to ~/.claude/settings.json (the same file we add the
-    SessionStart hook to). You can remove them any time -- ask Claude
-    to edit the file, or run the uninstaller.
+    prompting for every operation. Adds 19 entries (17 vault-scoped
+    + 2 Sentinel log/events) to ~/.claude/settings.json (the same
+    file we add the SessionStart hook to). You can remove them any
+    time -- ask Claude to edit the file, or run the uninstaller.
   - Install Sentinel framework + Cortex observer at
     ~/.claude/sentinel/ and register 5 hooks in
     ~/.claude/settings.json.
@@ -696,9 +696,10 @@ diff + ask `Proceed? [y/N]`, regardless of mode.
 6.5. **Vault permissions allowlist.** This is one of the four privileged
    writes -- diff always shown, regardless of verbose mode.
 
-   The goal: add 17 vault-scoped allowlist entries to
-   `~/.claude/settings.json` under `permissions.allow` so Cortex flows
-   don't trigger a prompt for every read/write inside the vault.
+   The goal: add 19 entries (17 vault-scoped + 2 Sentinel log/events)
+   to `~/.claude/settings.json` under `permissions.allow` so Cortex
+   flows don't trigger a prompt for every read/write inside the vault
+   or Sentinel directories.
 
    ```bash
    # Stage:
@@ -725,7 +726,9 @@ diff + ask `Proceed? [y/N]`, regardless of mode.
          "Bash(cp:" + $glob + " " + $glob + ")",
          "Bash(touch:" + $glob + ")",
          "Bash(tee:" + $glob + ")",
-         "Bash(sed:" + $glob + ")"
+         "Bash(sed:" + $glob + ")",
+         "Read(~/.claude/sentinel/log/**)",
+         "Read(~/.claude/sentinel/events/**)"
        ] as $cortex_entries
      | .permissions.allow = (
          ((.permissions.allow // []) + $cortex_entries) | unique

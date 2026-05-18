@@ -71,6 +71,10 @@ case "${1:-}" in
       check "sentinel $ev hook in settings.json" \
         "jq -e '.hooks.$ev[]?.hooks[]? | select(.command | contains(\"sentinel/hooks/\"))' '$FAKE_HOME/.claude/settings.json' >/dev/null"
     done
+    check "sentinel/log permission entry present" \
+      "jq -e '.permissions.allow | any(. == \"Read(~/.claude/sentinel/log/**)\")'  '$FAKE_HOME/.claude/settings.json' >/dev/null"
+    check "sentinel/events permission entry present" \
+      "jq -e '.permissions.allow | any(. == \"Read(~/.claude/sentinel/events/**)\")'  '$FAKE_HOME/.claude/settings.json' >/dev/null"
     if [ $fail -eq 0 ]; then
       echo
       echo "All smoke checks passed."
