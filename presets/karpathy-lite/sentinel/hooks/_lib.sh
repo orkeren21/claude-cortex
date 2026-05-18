@@ -86,7 +86,7 @@ sentinel_should_dispatch() {
 
   local hash
   hash="$(cortex_event_hash "$hook" "$tool" "$payload")"
-  if [ -f "$log" ] && grep -q "\"hash\":\"$hash\".*\"observer\":\"$observer\"" "$log" 2>/dev/null; then
+  if [ -f "$log" ] && grep -q "\"observer\":\"$observer\".*\"hash\":\"$hash\"\|\"hash\":\"$hash\".*\"observer\":\"$observer\"" "$log" 2>/dev/null; then
     cortex_jsonl_append "$log" \
       "{\"kind\":\"event_deduped\",\"observer\":\"$observer\",\"hook\":\"$hook\",\"hash\":\"$hash\",\"ts\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}"
     return 1
@@ -95,18 +95,18 @@ sentinel_should_dispatch() {
   return 0
 }
 
-# sentinel_emit_event SID EID OBSERVER HOOK PAYLOAD_JSON TRANSCRIPT_JSON
+# sentinel_emit_event SID EID OBSERVER HOOK TOOL_NAME PAYLOAD_JSON TRANSCRIPT_JSON
 # Writes the event payload file, appends event_emitted JSONL line,
 # prints the system-reminder text to stdout (caller injects it).
 sentinel_emit_event() {
-  local sid="$1" eid="$2" observer="$3" hook="$4" payload="$5" transcript="$6"
+  local sid="$1" eid="$2" observer="$3" hook="$4" tool="$5" payload="$6" transcript="$7"
   local events_dir="$CLAUDE_SENTINEL_HOME/events/$sid"
   local log="$CLAUDE_SENTINEL_HOME/log/$sid.jsonl"
   mkdir -p "$events_dir" 2>/dev/null
   local payload_file="$events_dir/$eid.json"
 
   local hash
-  hash="$(cortex_event_hash "$hook" "" "$payload")"
+  hash="$(cortex_event_hash "$hook" "$tool" "$payload")"
 
   printf '{"event_id":"%s","session_id":"%s","hook":"%s","observer":"%s","payload":%s,"transcript_window":%s,"hash":"%s","ts":"%s"}' \
     "$eid" "$sid" "$hook" "$observer" "$payload" "$transcript" "$hash" \

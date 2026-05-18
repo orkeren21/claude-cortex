@@ -34,7 +34,7 @@ teardown() {
 
 @test "sentinel_emit_event writes payload + jsonl line + reminder" {
   source "$HELPERS"; source "$LIB"
-  output="$(sentinel_emit_event 'sid1' 'eid1' 'cortex-capture' 'post_tool_use' '{"tool":"Write"}' '[]')"
+  output="$(sentinel_emit_event 'sid1' 'eid1' 'cortex-capture' 'post_tool_use' 'Write' '{"tool":"Write"}' '[]')"
   [ -f "$CLAUDE_SENTINEL_HOME/events/sid1/eid1.json" ]
   [ -f "$CLAUDE_SENTINEL_HOME/log/sid1.jsonl" ]
   grep -q '"kind":"event_emitted"' "$CLAUDE_SENTINEL_HOME/log/sid1.jsonl"
@@ -43,12 +43,21 @@ teardown() {
   printf '%s\n' "$output" | grep -q "Event payload:.*sid1/eid1.json"
 }
 
-@test "sentinel_should_dispatch returns 0 first time, 1 within dedup window" {
+@test "sentinel_should_dispatch dedups identical event after emit" {
   source "$HELPERS"; source "$LIB"
-  sentinel_emit_event 'sid1' 'eid_a' 'cortex-capture' 'post_tool_use' '{"tool":"Write"}' '[]' >/dev/null
-  # Same hash on retry: emit a second event with the same content
-  sentinel_should_dispatch 'sid1' 'cortex-capture' 'post_tool_use' 'Write' '{"tool":"Write"}' || \
-    skip "first call should always say dispatch=ok"
+  # First emit: payload+tool combination not in log -> should dispatch.
+  sentinel_should_dispatch 'sid1' 'cortex-capture' 'post_tool_use' 'Write' '{"tool":"Write"}'
+  sentinel_emit_event 'sid1' 'eid_a' 'cortex-capture' 'post_tool_use' 'Write' '{"tool":"Write"}' '[]' >/dev/null
+  # Second check with same inputs -> hash already in log -> should NOT dispatch.
+  ! sentinel_should_dispatch 'sid1' 'cortex-capture' 'post_tool_use' 'Write' '{"tool":"Write"}'
+  grep -q '"kind":"event_deduped"' "$CLAUDE_SENTINEL_HOME/log/sid1.jsonl"
+}
+
+@test "sentinel_should_dispatch does not dedup different tool args with same payload" {
+  source "$HELPERS"; source "$LIB"
+  sentinel_emit_event 'sid1' 'eid_a' 'cortex-capture' 'post_tool_use' 'Write' '{"tool":"Write"}' '[]' >/dev/null
+  # Different tool name -> different hash -> should dispatch.
+  sentinel_should_dispatch 'sid1' 'cortex-capture' 'post_tool_use' 'Read' '{"tool":"Write"}'
 }
 
 @test "sentinel_should_dispatch returns 1 (drop) when cap reached" {
