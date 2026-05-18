@@ -141,11 +141,16 @@ cortex_jsonl_append() {
 cortex_jsonl_count() {
   local file="$1" kind="$2" observer="$3"
   [ -f "$file" ] || { printf '0'; return 0; }
-  grep -c "\"kind\":\"$kind\".*\"observer\":\"$observer\"" "$file" 2>/dev/null || printf '0'
+  local n
+  n="$(grep -c "\"kind\":\"$kind\".*\"observer\":\"$observer\"" "$file" 2>/dev/null)"
+  printf '%s' "${n:-0}"
 }
 
 # cortex_event_hash KIND TOOL_NAME PAYLOAD_TEXT
 # Returns a short stable hex hash for dedup. Uses shasum (built into macOS).
+# Inputs are joined with '|' for cheapness; collisions across "a|b","c"
+# vs "a","b|c" are possible but harmless at our hash width (64 bits)
+# and per-session cap.
 cortex_event_hash() {
   printf '%s|%s|%s' "$1" "$2" "$3" | shasum -a 256 | cut -c1-16
 }

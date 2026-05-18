@@ -224,6 +224,15 @@ EOF
   [ "$result" -eq 0 ]
 }
 
+@test "cortex_jsonl_count returns clean '0' on existing file with no matches" {
+  source "$HELPERS"
+  local f="$TMPDIR_TEST/log.jsonl"
+  cortex_jsonl_append "$f" '{"kind":"other","observer":"other"}'
+  result="$(cortex_jsonl_count "$f" event_emitted cortex-capture)"
+  [ "$result" = "0" ]            # exact byte-equality
+  [ "$result" -eq 0 ]            # integer-comparison (caller's path)
+}
+
 @test "cortex_event_hash is deterministic for same input" {
   source "$HELPERS"
   h1="$(cortex_event_hash 'post_tool_use' 'Write' 'foo bar')"
