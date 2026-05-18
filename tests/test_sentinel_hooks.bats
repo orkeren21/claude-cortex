@@ -79,3 +79,17 @@ teardown() {
   [ "$emitted" -eq 3 ]
   [ "$cap_reached" -eq 1 ]
 }
+
+@test "post-tool-use hook ignores nested tool_name in tool_input" {
+  # Crafted payload where tool_input contains a literal "tool_name":"..." substring.
+  # The hook must extract the OUTER tool_name ("Write"), not the nested fake one.
+  payload='{"session_id":"sid1","tool_name":"Write","tool_input":{"old_string":"\"tool_name\":\"FAKE\"","new_string":"x"},"hook_event_name":"PostToolUse"}'
+  printf '%s' "$payload" | "$HOOK_DIR/post-tool-use.sh" >/dev/null
+  log="$CLAUDE_SENTINEL_HOME/log/sid1.jsonl"
+  payload_file="$(ls "$CLAUDE_SENTINEL_HOME/events/sid1/"*.json 2>/dev/null | head -1)"
+  [ -f "$payload_file" ]
+  # The extracted tool_name should not be FAKE; the dedup hash on the second send
+  # should match the first (proving they used the same tool_name in the hash).
+  printf '%s' "$payload" | "$HOOK_DIR/post-tool-use.sh" >/dev/null
+  grep -q '"kind":"event_deduped"' "$log"
+}

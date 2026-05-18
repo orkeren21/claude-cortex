@@ -21,12 +21,30 @@ source "$LIB"
 stdin="$(cat)"
 [ -z "$stdin" ] && exit 0
 
-# Extract session_id, tool_name, tool_input as raw JSON-or-string.
-session_id="$(printf '%s' "$stdin" | sed -n 's/.*"session_id"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)"
+# Extract session_id and tool_name from stdin. tool_input is not parsed; raw stdin flows through as the payload.
+# Extract first occurrence of "key":"value". sed with .* is greedy and picks the LAST
+# occurrence -- a tool_input field literally containing "tool_name":"..." would shadow
+# the real tool name. awk's match() with offsets gives us first-occurrence semantics.
+sentinel_extract_first_string() {
+  local key="$1" json="$2"
+  printf '%s' "$json" | awk -v key="$key" '
+    {
+      pat = "\"" key "\"[[:space:]]*:[[:space:]]*\""
+      if (match($0, pat)) {
+        rest = substr($0, RSTART + RLENGTH)
+        end = index(rest, "\"")
+        if (end > 0) print substr(rest, 1, end - 1)
+        exit
+      }
+    }
+  '
+}
+
+session_id="$(sentinel_extract_first_string session_id "$stdin")"
 [ -z "$session_id" ] && exit 0
 printf '%s' "$session_id" | grep -qE '^[A-Za-z0-9_-]+$' || exit 0
 
-tool_name="$(printf '%s' "$stdin" | sed -n 's/.*"tool_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)"
+tool_name="$(sentinel_extract_first_string tool_name "$stdin")"
 tool_name="${tool_name:-unknown}"
 
 # Best-effort transcript window read (last 20 turns).

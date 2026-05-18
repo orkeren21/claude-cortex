@@ -22,7 +22,24 @@ stdin="$(cat)"
 [ -z "$stdin" ] && exit 0
 
 # Extract session_id.
-session_id="$(printf '%s' "$stdin" | sed -n 's/.*"session_id"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)"
+# Extract first occurrence of "key":"value". sed with .* is greedy and picks the LAST
+# occurrence -- awk's match() with offsets gives us first-occurrence semantics.
+sentinel_extract_first_string() {
+  local key="$1" json="$2"
+  printf '%s' "$json" | awk -v key="$key" '
+    {
+      pat = "\"" key "\"[[:space:]]*:[[:space:]]*\""
+      if (match($0, pat)) {
+        rest = substr($0, RSTART + RLENGTH)
+        end = index(rest, "\"")
+        if (end > 0) print substr(rest, 1, end - 1)
+        exit
+      }
+    }
+  '
+}
+
+session_id="$(sentinel_extract_first_string session_id "$stdin")"
 [ -z "$session_id" ] && exit 0
 printf '%s' "$session_id" | grep -qE '^[A-Za-z0-9_-]+$' || exit 0
 
