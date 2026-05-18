@@ -1,0 +1,9 @@
+# presets/karpathy-lite/sentinel/observers/cortex-capture/observer.yaml
+# Per-observer metadata. The framework reads this for documentation;
+# the live config lives in ~/.claude/sentinel/observers.yaml.
+
+id: cortex-capture
+name: "Cortex auto-capture"
+description: "Detects capture-worthy moments and writes to the vault."
+version: 0.1.0
+author: claude-cortex

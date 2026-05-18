@@ -143,3 +143,12 @@ EOF
   grep -q "side_agent:" "$f"
   grep -q "use_explicit_api_key:" "$f"
 }
+
+@test "cortex-capture system-prompt.md exists with required sections" {
+  local f="$BATS_TEST_DIRNAME/../presets/karpathy-lite/sentinel/observers/cortex-capture/system-prompt.md"
+  [ -f "$f" ]
+  grep -q "auto-capture heuristics" "$f"
+  grep -q "Routing table" "$f"
+  grep -q "frontmatter" "$f"
+  grep -q "active inbox folder" "$f"
+}
