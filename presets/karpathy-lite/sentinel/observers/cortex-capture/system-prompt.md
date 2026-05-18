@@ -92,9 +92,9 @@ Look at the event payload + transcript window. Classify:
 | Query confirmed working | "that worked", "yep returns the rows", "this query gives me..." | query |
 | W-XXXXXX mentioned | any `W-\d{6,}` pattern | scratch + sets active work item |
 
-If none match, write a `dispatch_completed` line to
-`~/.claude/sentinel/log/<session-id>.jsonl` with `outcome: no_capture`
-and exit. Do not write to the vault.
+If none match, write a `dispatch_completed` line to the JSONL log
+(see "## After writing" below for the path resolution rule) with
+`outcome: no_capture` and exit. Do not write to the vault.
 
 ## Mode
 
