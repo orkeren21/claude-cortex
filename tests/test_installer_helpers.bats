@@ -247,3 +247,30 @@ EOF
   h2="$(cortex_event_hash 'post_tool_use' 'Write' 'bar')"
   [ "$h1" != "$h2" ]
 }
+
+@test "CLAUDE.md.tmpl drops auto-capture heuristics table" {
+  local f="$BATS_TEST_DIRNAME/../presets/karpathy-lite/CLAUDE.md.tmpl"
+  [ -f "$f" ]
+  ! grep -q "## Auto-capture heuristics" "$f"
+  ! grep -q "Trigger phrases" "$f"
+}
+
+@test "CLAUDE.md.tmpl keeps vault contract + slash commands" {
+  local f="$BATS_TEST_DIRNAME/../presets/karpathy-lite/CLAUDE.md.tmpl"
+  grep -q "Vault location" "$f"
+  grep -q "Read/write contract" "$f"
+  grep -q "/save-to-inbox" "$f"
+}
+
+@test "CLAUDE.md.tmpl adds a Sentinel section" {
+  local f="$BATS_TEST_DIRNAME/../presets/karpathy-lite/CLAUDE.md.tmpl"
+  grep -q "## Sentinel" "$f"
+  grep -q "/observer-status" "$f"
+  grep -q '\.claude/sentinel/log' "$f"
+}
+
+@test "CLAUDE.md.tmpl keeps auto_capture_mode field" {
+  local f="$BATS_TEST_DIRNAME/../presets/karpathy-lite/CLAUDE.md.tmpl"
+  grep -q "Auto-capture mode:" "$f"
+  grep -q "{{AUTO_CAPTURE_MODE}}" "$f"
+}

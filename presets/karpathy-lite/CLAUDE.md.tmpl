@@ -19,9 +19,10 @@ use it to choose which files to open.
 1. **Auto-stage to `inbox/<W-ID>/`** -- when you detect a query that worked,
    a decision being made, or a gotcha worth remembering. Always announce
    the stage in one line: `Staged: inbox/<W-ID>/<slug>.md`.
-2. **Offer-and-approve for durable destinations** -- when you detect content
-   that belongs in `insights/`, `projects/<name>/decisions/`, `architecture/`,
-   or `references/`. Surface a short proposal; user says yes/edit/no.
+2. **Sentinel observer subagent** -- when Sentinel emits a
+   system-reminder, dispatch the Cortex observer (see Sentinel
+   section below). The observer writes to durable destinations
+   directly per the routing table; you do not curate or offer.
 3. **Slash commands** -- `/save-to-inbox`, `/save-insight`, `/retro`,
    `/resume-work`, `/triage-inbox`, `/refresh-index`. The user explicitly invoked.
 4. **Natural-language equivalents** -- phrases like "save this to the vault",
@@ -34,37 +35,32 @@ use it to choose which files to open.
   This rule applies to "mocked" or "test" credentials too.
 - Delete files from the vault. The retro flow archives; only the user purges.
 
-## Auto-capture heuristics (mode = `{{AUTO_CAPTURE_MODE}}`)
-
-Detect these patterns and act per the mode. In every mode, auto-stages are
-announced in one line; durable writes always go through offer-and-approve.
-
-| Pattern | Trigger phrases | Type |
-|---|---|---|
-| Query confirmed working | "that worked", "yep returns the rows", "this query gives me..." | query |
-| Decision made | "we decided", "going with X", "let's use X over Y" | decision |
-| Generalizable gotcha | "turns out", "gotcha is", "next time remember" | insight |
-| Architecture explained | extended explanation of repo/system structure | architecture |
-| Person context | "Jane is the owner of...", "ask John about..." | person |
-| W-XXXXXX mentioned | any `W-\d{6,}` pattern | (sets active work item) |
-
-Mode behaviors:
-- `aggressive`: auto-stage every detected pattern; batched offer at session end.
-- `balanced` (default): auto-stage queries and scratch; offer for decisions/insights;
-  batched offer at session end.
-- `minimal`: no auto-stage; offers only at session end / completion signals.
-- `off`: slash commands + natural language only.
-
 ## Triggers
 
 | Trigger | When | What you do |
 |---|---|---|
 | Slash command | user types `/retro`, `/save-insight`, etc. | Run the command. |
 | Natural language | "save this to the vault", "stage this", "let's retro W-XXXXXX" | Map to corresponding command. |
-| Auto-stage | Heuristic match per mode | Stage and announce in one line. |
 | Session-end offer | Long session (>30 min activity) AND captures made/queued | Ask once: "Save these N items?" |
 | Completion signal | PR merged via `gh`, "shipped it", work-item closed | Ask: "Run /retro for W-<ID>?" |
-| Stale-staging | At session start: any `inbox/W-*/` `last_touched` > {{STALE_STAGING_DAYS}} days | One-line surface; offer `/triage-inbox`. |
+
+## Sentinel (auto-capture)
+
+Auto-capture is handled by the Sentinel framework, not by your
+ambient vigilance. Hooks fire on every relevant Claude Code event;
+the framework dispatches the Cortex observer subagent in the
+background to decide what to capture.
+
+You do not need to detect trigger phrases yourself. You do not need
+to offer captures. The observer does that work.
+
+When Sentinel emits a `system-reminder` saying
+"Sentinel: dispatch observer 'cortex-capture' in background", call
+the Agent tool with `run_in_background: true` and the parameters
+from the reminder. That is your only role in auto-capture.
+
+To audit what Sentinel did this session, run `/observer-status`. The
+JSONL log lives at `~/.claude/sentinel/log/<session-id>.jsonl`.
 
 ## Routing table (Karpathy-lite)
 
