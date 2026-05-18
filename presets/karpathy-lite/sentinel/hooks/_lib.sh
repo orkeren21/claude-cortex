@@ -160,3 +160,23 @@ sentinel_read_transcript_window() {
   tail -n "$k" "$transcript_path" 2>/dev/null | awk 'NR>1{printf ","} {printf "%s", $0}'
   printf ']'
 }
+
+# sentinel_check_dispatch_mode
+# Returns 0 if dispatch should proceed; non-zero (with stderr message)
+# if dispatch_mode is set to side_agent (PR-I not yet installed).
+sentinel_check_dispatch_mode() {
+  local mode
+  mode="$(cortex_yaml_get "$SENTINEL_CONFIG_YAML" dispatch_mode)"
+  case "$mode" in
+    side_agent)
+      printf 'sentinel: side-agent transport not yet installed; install PR-I or set dispatch_mode: subagent in %s\n' \
+        "$SENTINEL_CONFIG_YAML" >&2
+      cortex_jsonl_append "$CLAUDE_SENTINEL_HOME/log/dispatch-mode-errors.jsonl" \
+        "{\"kind\":\"dispatch_mode_error\",\"mode\":\"$mode\",\"ts\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}"
+      return 1
+      ;;
+    *)
+      return 0
+      ;;
+  esac
+}

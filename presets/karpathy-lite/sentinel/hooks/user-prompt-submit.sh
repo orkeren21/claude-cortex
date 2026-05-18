@@ -18,6 +18,8 @@ source "$HELPERS"
 # shellcheck source=/dev/null
 source "$LIB"
 
+sentinel_check_dispatch_mode || exit 0
+
 stdin="$(cat)"
 [ -z "$stdin" ] && exit 0
 

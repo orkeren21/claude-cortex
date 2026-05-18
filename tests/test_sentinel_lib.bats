@@ -161,3 +161,24 @@ EOF
   grep -q "source: claude-cortex" "$f"
   grep -q '\.claude/sentinel/log' "$f"
 }
+
+@test "dispatch_mode side_agent emits clear error" {
+  source "$HELPERS"; source "$LIB"
+  mkdir -p "$CLAUDE_SENTINEL_HOME"
+  cat > "$CLAUDE_SENTINEL_HOME/config.yaml" <<EOF
+dispatch_mode: side_agent
+EOF
+  run sentinel_check_dispatch_mode
+  [ "$status" -ne 0 ]
+  printf '%s\n' "$output" | grep -q "side-agent transport not yet installed"
+  printf '%s\n' "$output" | grep -q "install PR-I"
+}
+
+@test "dispatch_mode subagent or missing returns 0 (proceed)" {
+  source "$HELPERS"; source "$LIB"
+  mkdir -p "$CLAUDE_SENTINEL_HOME"
+  : > "$CLAUDE_SENTINEL_HOME/config.yaml"
+  sentinel_check_dispatch_mode
+  printf 'dispatch_mode: subagent\n' > "$CLAUDE_SENTINEL_HOME/config.yaml"
+  sentinel_check_dispatch_mode
+}
