@@ -16,16 +16,13 @@ file inside a vault folder, read that folder's `_index.md` if present and
 use it to choose which files to open.
 
 **You may WRITE to the vault only via these paths:**
-1. **Auto-stage to `inbox/<W-ID>/`** -- when you detect a query that worked,
-   a decision being made, or a gotcha worth remembering. Always announce
-   the stage in one line: `Staged: inbox/<W-ID>/<slug>.md`.
-2. **Sentinel observer subagent** -- when Sentinel emits a
+1. **Sentinel observer subagent** -- when Sentinel emits a
    system-reminder, dispatch the Cortex observer (see Sentinel
    section below). The observer writes to durable destinations
    directly per the routing table; you do not curate or offer.
-3. **Slash commands** -- `/save-to-inbox`, `/save-insight`, `/retro`,
+2. **Slash commands** -- `/save-to-inbox`, `/save-insight`, `/retro`,
    `/resume-work`, `/triage-inbox`, `/refresh-index`. The user explicitly invoked.
-4. **Natural-language equivalents** -- phrases like "save this to the vault",
+3. **Natural-language equivalents** -- phrases like "save this to the vault",
    "stage this", "let's retro W-XXXXXX". Map to the corresponding command.
 
 **You may NEVER:**
