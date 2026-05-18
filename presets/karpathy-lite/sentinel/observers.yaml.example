@@ -1,0 +1,30 @@
+# presets/karpathy-lite/sentinel/observers.yaml.example
+# Sentinel observer registry. Installed to ~/.claude/sentinel/observers.yaml.
+# One entry per observer. The Cortex auto-capture observer ships as the
+# first reference observer.
+#
+# YAML support is intentionally minimal. The framework parses with awk and
+# expects:
+#   - One observer per top-level list entry under `observers:`.
+#   - `subscribe:` is a flow sequence on a single line: [hook1, hook2, ...].
+#     Block-sequence form (newline-separated `- hook` items) is NOT supported.
+#   - All other fields are scalar. Nested mappings beyond what's shown below
+#     (specifically `tool_allowlist`) are read by tooling that understands
+#     them; the framework ignores them.
+#   - Observer IDs MUST match [A-Za-z0-9_-]+; IDs containing regex metacharacters
+#     are silently dropped at lookup time for safety.
+
+observers:
+  - id: cortex-capture
+    subscribe: [user_prompt_submit, post_tool_use, stop]
+    system_prompt_path: ~/.claude/sentinel/observers/cortex-capture/system-prompt.md
+    tool_allowlist:
+      tools: [Read, Write, Edit, Bash]
+      bash_restrictions:
+        path_globs:
+          - "{{VAULT_PATH}}/**"
+        denied_commands: [rm, rmdir, unlink]
+    transcript_window: 20
+    per_session_cap: 30
+    dedup_window_seconds: 60
+    model: claude-haiku-4-5

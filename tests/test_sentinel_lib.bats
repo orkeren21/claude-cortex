@@ -123,3 +123,22 @@ EOF
   HOME="$TMPDIR_TEST" result="$(sentinel_read_transcript_window 'no-such-session' 20)"
   [ "$result" = "[]" ]
 }
+
+@test "observers.yaml.example contains cortex-capture entry" {
+  local f="$BATS_TEST_DIRNAME/../presets/karpathy-lite/sentinel/observers.yaml.example"
+  [ -f "$f" ]
+  grep -q "id: cortex-capture" "$f"
+  grep -q "subscribe:" "$f"
+  grep -q "system_prompt_path:" "$f"
+  grep -q "transcript_window:" "$f"
+  grep -q "per_session_cap:" "$f"
+  grep -q "model: claude-haiku-4-5" "$f"
+}
+
+@test "config.yaml.example documents both dispatch modes" {
+  local f="$BATS_TEST_DIRNAME/../presets/karpathy-lite/sentinel/config.yaml.example"
+  [ -f "$f" ]
+  grep -q "dispatch_mode: subagent" "$f"
+  grep -q "side_agent:" "$f"
+  grep -q "use_explicit_api_key:" "$f"
+}
