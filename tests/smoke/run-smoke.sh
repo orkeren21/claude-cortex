@@ -49,6 +49,28 @@ case "${1:-}" in
       "grep -q '^preset: karpathy-lite$' '$VAULT/.claude-cortex/config.yaml'"
     check "vault config has version" \
       "grep -q '^version: 0.1.0$' '$VAULT/.claude-cortex/config.yaml'"
+    check "sentinel hooks dir present" \
+      "test -d '$FAKE_HOME/.claude/sentinel/hooks'"
+    check "sentinel _lib.sh present" \
+      "test -f '$FAKE_HOME/.claude/sentinel/hooks/_lib.sh'"
+    for h in session-start user-prompt-submit post-tool-use stop session-end; do
+      check "sentinel hook $h.sh executable" \
+        "test -x '$FAKE_HOME/.claude/sentinel/hooks/$h.sh'"
+    done
+    check "sentinel _lib.sh not executable" \
+      "! test -x '$FAKE_HOME/.claude/sentinel/hooks/_lib.sh'"
+    check "sentinel observers.yaml present" \
+      "test -f '$FAKE_HOME/.claude/sentinel/observers.yaml'"
+    check "sentinel config.yaml present" \
+      "test -f '$FAKE_HOME/.claude/sentinel/config.yaml'"
+    check "sentinel cortex-capture system-prompt present" \
+      "test -f '$FAKE_HOME/.claude/sentinel/observers/cortex-capture/system-prompt.md'"
+    check "observers.yaml VAULT_PATH substituted" \
+      "! grep -q '{{VAULT_PATH}}' '$FAKE_HOME/.claude/sentinel/observers.yaml'"
+    for ev in SessionStart UserPromptSubmit PostToolUse Stop SessionEnd; do
+      check "sentinel $ev hook in settings.json" \
+        "jq -e '.hooks.$ev[]?.hooks[]? | select(.command | contains(\"sentinel/hooks/\"))' '$FAKE_HOME/.claude/settings.json' >/dev/null"
+    done
     if [ $fail -eq 0 ]; then
       echo
       echo "All smoke checks passed."
